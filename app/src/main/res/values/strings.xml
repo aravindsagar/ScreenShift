@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Screen Shift</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="stub_message">Temporary stub. Options and settings will come here.</string>
+</resources>

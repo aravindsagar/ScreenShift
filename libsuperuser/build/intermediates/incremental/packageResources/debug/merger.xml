@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="/home/aravind/Android/workspace/ScreenShift/libsuperuser/res"/><source path="/home/aravind/Android/workspace/ScreenShift/libsuperuser/build/generated/res/rs/debug"/><source path="/home/aravind/Android/workspace/ScreenShift/libsuperuser/build/generated/res/generated/debug"/></dataSet><dataSet config="debug"><source path="/home/aravind/Android/workspace/ScreenShift/libsuperuser/src/debug/res"/></dataSet><mergedItems/></merger>
