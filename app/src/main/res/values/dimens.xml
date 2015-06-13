@@ -2,4 +2,8 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="fab_size">64dp</dimen>
+    <dimen name="overscan_icon_size">48dp</dimen>
+    <dimen name="seekbar_margin">8dp</dimen>
+    <dimen name="toolbar_elevation">4dp</dimen>
 </resources>

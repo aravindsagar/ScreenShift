@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MyTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Set AppCompat’s actionBarStyle -->
+        <!--<item name="actionBarStyle">@style/AppTheme</item>-->
+
+        <!-- Set AppCompat’s color theming attrs -->
+        <item name="colorPrimary">@color/color_theme</item>
+        <item name="colorPrimaryDark">@color/color_theme_dark</item>
+<!--
+        <item name="colorControlActivated">@color/color_theme_dark</item>-->
+        <item name="colorAccent">@color/color_accent</item>
+    <!-- The rest of your attributes -->
+    </style>
+
+    <style name="Theme.MyTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar" />
+</resources>
