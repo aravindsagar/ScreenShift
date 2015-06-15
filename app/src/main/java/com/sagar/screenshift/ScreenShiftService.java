@@ -60,7 +60,7 @@ public class ScreenShiftService extends Service {
     }
 
     private void toggle(boolean sendBroadcast) {
-        if(SharedPreferencesHelper.getBoolPreference(this, SharedPreferencesHelper.KEY_MASTER_SWITCH_ON)) {
+        if(PreferencesHelper.getBoolPreference(this, PreferencesHelper.KEY_MASTER_SWITCH_ON)) {
             stop(sendBroadcast);
         } else {
             start(sendBroadcast);
@@ -73,12 +73,12 @@ public class ScreenShiftService extends Service {
             @Override
             protected Boolean doInBackground(Boolean... booleans) {
                 if(!Shell.SU.available()) return false;
-                List<String> results = Shell.SU.run("wm overscan 0,0,0,450");
+                List<String> results = Shell.SU.run("wm overscan 0,0,0,480");
                 for (String result : results){
                     Log.i("ScreenShiftService", result);
                 }
-                SharedPreferencesHelper.setPreference(ScreenShiftService.this,
-                        SharedPreferencesHelper.KEY_MASTER_SWITCH_ON, true);
+                PreferencesHelper.setPreference(ScreenShiftService.this,
+                        PreferencesHelper.KEY_MASTER_SWITCH_ON, true);
                 mSendBroadcast = booleans[0];
                 return true;
             }
@@ -109,8 +109,8 @@ public class ScreenShiftService extends Service {
                 for (String result : results){
                     Log.i("ScreenShiftService", result);
                 }
-                SharedPreferencesHelper.setPreference(ScreenShiftService.this,
-                        SharedPreferencesHelper.KEY_MASTER_SWITCH_ON, false);
+                PreferencesHelper.setPreference(ScreenShiftService.this,
+                        PreferencesHelper.KEY_MASTER_SWITCH_ON, false);
                 mSendBroadcast = booleans[0];
                 return null;
             }

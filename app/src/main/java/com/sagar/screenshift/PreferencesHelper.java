@@ -8,9 +8,9 @@ import android.preference.PreferenceManager;
  * Created by aravind on 12/6/15.
  * Constants for SharedPrefernce and convenience methods for getting and setting them
  */
-public class SharedPreferencesHelper {
+public class PreferencesHelper {
 
-    private SharedPreferencesHelper() {
+    private PreferencesHelper() {
 
     }
 
