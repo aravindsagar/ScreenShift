@@ -25,6 +25,8 @@ public class PreferencesHelper {
     public static final String KEY_OVERSCAN_RIGHT = "overscan_right";
     public static final String KEY_DENSITY_ENABLED = "density_enabled";
     public static final String KEY_DENSITY_VALUE = "density_value";
+    public static final String KEY_DISPLAY_HEIGHT = "display_height";
+    public static final String KEY_DISPLAY_WIDTH = "display_width";
 
     public static void setPreference(Context context, final String KEY, boolean value){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);

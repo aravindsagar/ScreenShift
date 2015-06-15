@@ -3,4 +3,6 @@
     <color name="color_theme">#673AB7</color>
     <color name="color_theme_dark">#512DA8</color>
     <color name="color_accent">#FF5722</color>
+    <color name="color_error_background">#73ff0200</color>
+    <color name="color_warning_background">#83ffef1b</color>
 </resources>

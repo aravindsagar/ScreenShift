@@ -1,8 +1,10 @@
 package com.sagar.screenshift;
 
 import android.animation.Animator;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -17,6 +19,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -63,10 +66,12 @@ public class MainActivity extends AppCompatActivity {
     boolean resolutionEnabledChanged, densityEnabledChanged, overscanEnabledChanged, widthChanged,
             heightChanged, leftOverscanChanged, rightOverscanChanged, topOverscanChanged,
             bottomOverscanChanged, densityChanged;
+    boolean overrideWarning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH));
         setContentView(R.layout.activity_main);
         init(savedInstanceState);
         setUpToolbar();
@@ -149,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupResolutionCard(){
         resolutionCard = (CardView) cardsLayout.findViewById(R.id.card_view_resolution);
+        resolutionCard.setBackgroundColor(Color.WHITE);
         resolutionSwitch = (SwitchCompat) resolutionCard.findViewById(R.id.switch_resolution);
         resolutionInnerLayout = (LinearLayout) resolutionCard.findViewById(R.id.linear_layout_resolution);
         widthText = (EditText) resolutionInnerLayout.findViewById(R.id.edit_text_width);
@@ -196,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupOverscanCard(){
         overscanCard = (CardView) cardsLayout.findViewById(R.id.card_view_overscan);
+        overscanCard.setBackgroundColor(Color.WHITE);
         overscanSwitch = (SwitchCompat) overscanCard.findViewById(R.id.switch_overscan);
         leftOverscanLayout = (LinearLayout) overscanCard.findViewById(R.id.linear_layout_overscan_left);
         rightOverscanLayout = (LinearLayout) overscanCard.findViewById(R.id.linear_layout_overscan_right);
@@ -279,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupDensityCard(){
         densityCard = (CardView) cardsLayout.findViewById(R.id.card_view_density);
+        densityCard.setBackgroundColor(Color.WHITE);
         densitySwitch = (SwitchCompat) densityCard.findViewById(R.id.switch_density);
         densityText = (EditText) densityCard.findViewById(R.id.edit_text_density);
 
@@ -401,8 +409,7 @@ public class MainActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
             fabHideAnimatorListener = new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(Animator animator) {
-                }
+                public void onAnimationStart(Animator animator) {}
 
                 @Override
                 public void onAnimationEnd(Animator animator) {
@@ -416,8 +423,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onAnimationRepeat(Animator animator) {
-                }
+                public void onAnimationRepeat(Animator animator) {}
             };
             fabShowAnimatorListener = new Animator.AnimatorListener() {
                 @Override
@@ -449,14 +455,16 @@ public class MainActivity extends AppCompatActivity {
         doneFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!validateData()) {
-
+                resolutionCard.setBackgroundColor(Color.WHITE);
+                overscanCard.setBackgroundColor(Color.WHITE);
+                densityCard.setBackgroundColor(Color.WHITE);
+                disableAllCards();
+                if (!validateAndSaveData()) {
+                    enableAllCards();
                     return;
                 }
-                disableAllCards();
-                saveData();
                 float ddsize = getDiagonalDisplaySize();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
                     doneFab.animate().translationX(getDisplayWidth() / 2 - doneFab.getX() - doneFab.getWidth() / 2)
                             .translationY(-doneFab.getY() + getDisplayHeight() / 2 - doneFab.getHeight() / 2);
                     fabBackground.animate().translationX(getDisplayWidth() / 2 - doneFab.getX() - doneFab.getWidth() / 2)
@@ -478,10 +486,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private boolean validateData() {
-        return true;
-    }
-
     private float getDiagonalDisplaySize(){
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -500,20 +504,87 @@ public class MainActivity extends AppCompatActivity {
         return displaymetrics.heightPixels;
     }
 
-    private void saveData(){
+    private boolean validateAndSaveData(){
+        if(!TextUtils.isDigitsOnly(widthText.getText()) || !TextUtils.isDigitsOnly(heightText.getText()) || !TextUtils.isDigitsOnly(densityText.getText())){
+            Toast.makeText(this, "Please enter valid inputs", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        int width, height, density, leftOverscan, rightOverscan, topOverscan, bottomOverscan;
+        ScreenShiftService.DisplaySize displaySize = ScreenShiftService.DisplaySize.getDeviceDisplaySize(this);
+        try {
+            if(!widthText.getText().toString().isEmpty()) width = Integer.parseInt(widthText.getText().toString());
+            else width = displaySize.width;
+            if(!heightText.getText().toString().isEmpty()) height = Integer.parseInt(heightText.getText().toString());
+            else height = displaySize.height;
+        } catch (NumberFormatException e) {
+            resolutionCard.setBackgroundColor(getResources().getColor(R.color.color_error_background));
+            Toast.makeText(this, "Enter valid resolution values", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        try {
+            if(!densityText.getText().toString().isEmpty()) density = Integer.parseInt(densityText.getText().toString());
+            else density = 0;
+        } catch (NumberFormatException e) {
+            densityCard.setBackgroundColor(getResources().getColor(R.color.color_error_background));
+            Toast.makeText(this, "Enter valid density value", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(!overrideWarning && (width < displaySize.width/2 || width > displaySize.width * 2
+                || height < displaySize.height/2 || height > displaySize.height * 2)){
+            resolutionCard.setBackgroundColor(getResources().getColor(R.color.color_warning_background));
+            new AlertDialog.Builder(this)
+                    .setMessage("Resolution might make the display unusable. Are you sure you want to continue? Successively reboot twice if you continue and display is unusable.")
+                    .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            overrideWarning = true;
+                            doneFab.performClick();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return false;
+        }
+        leftOverscan = leftSeekBar.getProgress();
+        rightOverscan = rightSeekBar.getProgress();
+        topOverscan = topSeekBar.getProgress();
+        bottomOverscan = bottomSeekBar.getProgress();
+        if(!overrideWarning && overscanSwitch.isChecked() && (leftOverscan+rightOverscan > 50 || topOverscan+bottomOverscan > 50)){
+            overscanCard.setBackgroundColor(getResources().getColor(R.color.color_warning_background));
+            new AlertDialog.Builder(this)
+                    .setMessage("Overscan might make the display unusable. Are you sure you want to continue? Successively reboot twice if you continue and display is unusable.")
+                    .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            overrideWarning = true;
+                            doneFab.performClick();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return false;
+        }
+        overrideWarning = false;
         PreferencesHelper.setPreference(this, KEY_RESOLUTION_ENABLED, resolutionSwitch.isChecked());
         PreferencesHelper.setPreference(this, KEY_DENSITY_ENABLED, densitySwitch.isChecked());
         PreferencesHelper.setPreference(this, KEY_OVERSCAN_ENABLED, overscanSwitch.isChecked());
         if(!widthText.getText().toString().isEmpty())
-            PreferencesHelper.setPreference(this, KEY_RESOLUTION_WIDTH, Integer.parseInt(widthText.getText().toString()));
+            PreferencesHelper.setPreference(this, KEY_RESOLUTION_WIDTH, width);
+        else
+            PreferencesHelper.setPreference(this, KEY_RESOLUTION_WIDTH, -1);
         if(!heightText.getText().toString().isEmpty())
-            PreferencesHelper.setPreference(this, KEY_RESOLUTION_HEIGHT, Integer.parseInt(heightText.getText().toString()));
-        PreferencesHelper.setPreference(this, KEY_OVERSCAN_LEFT, leftSeekBar.getProgress());
-        PreferencesHelper.setPreference(this, KEY_OVERSCAN_RIGHT, rightSeekBar.getProgress());
-        PreferencesHelper.setPreference(this, KEY_OVERSCAN_TOP, topSeekBar.getProgress());
-        PreferencesHelper.setPreference(this, KEY_OVERSCAN_BOTTOM, bottomSeekBar.getProgress());
+            PreferencesHelper.setPreference(this, KEY_RESOLUTION_HEIGHT, height);
+        else
+            PreferencesHelper.setPreference(this, KEY_RESOLUTION_HEIGHT, -1);
+        PreferencesHelper.setPreference(this, KEY_OVERSCAN_LEFT, leftOverscan);
+        PreferencesHelper.setPreference(this, KEY_OVERSCAN_RIGHT, rightOverscan);
+        PreferencesHelper.setPreference(this, KEY_OVERSCAN_TOP, topOverscan);
+        PreferencesHelper.setPreference(this, KEY_OVERSCAN_BOTTOM, bottomOverscan);
         if(!densityText.getText().toString().isEmpty())
-            PreferencesHelper.setPreference(this, KEY_DENSITY_VALUE, Integer.parseInt(densityText.getText().toString()));
+            PreferencesHelper.setPreference(this, KEY_DENSITY_VALUE, density);
+        else
+            PreferencesHelper.setPreference(this, KEY_DENSITY_VALUE, -1);
+        return true;
     }
 
     private void enableService(){

@@ -5,6 +5,6 @@
     <string name="action_settings">Settings</string>
     <string name="stub_message">Temporary stub. Options and settings will come here.</string>
     <string name="heading_resolution">Resolution</string>
-    <string name="heading_overscan">Overscan</string>
+    <string name="heading_overscan">Overscan %</string>
     <string name="heading_density">Density</string>
 </resources>
