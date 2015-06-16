@@ -476,6 +476,9 @@ public class MainActivity extends AppCompatActivity {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
+                        if(PreferencesHelper.getBoolPreference(MainActivity.this, KEY_MASTER_SWITCH_ON)) {
+                            enableService();
+                        }
                         init(null);
                         enableAllCards();
                     }

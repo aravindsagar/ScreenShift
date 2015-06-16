@@ -22,8 +22,18 @@ import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
 
+import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_ENABLED;
+import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_VALUE;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DISPLAY_HEIGHT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DISPLAY_WIDTH;
+import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
+import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_ENABLED;
+import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_LEFT;
+import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_RIGHT;
+import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_TOP;
+import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_ENABLED;
+import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
+import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
 
 public class ScreenShiftService extends Service {
     public static final String ACTION_START = "action_start";
@@ -31,6 +41,7 @@ public class ScreenShiftService extends Service {
     public static final String ACTION_TOGGLE = "action_toggle";
     public static final String ACTION_SAVE_HEIGHT_WIDTH = "action_save_height_width";
     public static final String EXTRA_SEND_BROADCAST = "send_broadcast";
+    public static final String EXTRA_POST_NOTIFICATION = "post_notification";
 
     @Override
     public void onCreate() {
@@ -59,12 +70,15 @@ public class ScreenShiftService extends Service {
         if(intent != null){
             String action = intent.getAction();
             boolean sendBroadcast = intent.getBooleanExtra(EXTRA_SEND_BROADCAST, false);
+            boolean postNotification = intent.getBooleanExtra(EXTRA_POST_NOTIFICATION, true);
+            Log.d("send_broadcast", sendBroadcast+"");
+            Log.d("post_notification", postNotification+"");
             if(ACTION_START.equals(action)) {
-                start(sendBroadcast);
+                start(sendBroadcast, postNotification);
             } else if(ACTION_STOP.equals(action)) {
-                stop(sendBroadcast);
+                stop(sendBroadcast, postNotification);
             } else if(ACTION_TOGGLE.equals(action)) {
-                toggle(sendBroadcast);
+                toggle(sendBroadcast, postNotification);
             } else if(ACTION_SAVE_HEIGHT_WIDTH.equals(action)){
                 saveWidthHeight();
             }
@@ -72,72 +86,102 @@ public class ScreenShiftService extends Service {
         return START_STICKY;
     }
 
-    private void toggle(boolean sendBroadcast) {
+    private void toggle(boolean sendBroadcast, boolean postNotification) {
         if(PreferencesHelper.getBoolPreference(this, PreferencesHelper.KEY_MASTER_SWITCH_ON)) {
-            stop(sendBroadcast);
+            stop(sendBroadcast, postNotification);
         } else {
-            start(sendBroadcast);
+            start(sendBroadcast, postNotification);
         }
     }
 
-    private void start(boolean sendBroadcast){
+    private void start(boolean sendBroadcast, boolean postNotification){
         new AsyncTask<Boolean, Void, Boolean>() {
-            private boolean mSendBroadcast;
+            private boolean mSendBroadcast, mPostNotification;
             @Override
             protected Boolean doInBackground(Boolean... booleans) {
                 if(!Shell.SU.available()) return false;
-                List<String> results = Shell.SU.run("wm overscan 0,0,0,480");
-                for (String result : results){
-                    Log.i("ScreenShiftService", result);
+                List<String> commands = new ArrayList<>();
+                int height, width;
+                height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, 1280);
+                width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, 768);
+                if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_RESOLUTION_ENABLED)) {
+                    height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_RESOLUTION_HEIGHT, -1);
+                    width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_RESOLUTION_WIDTH, -1);
+                    if(height == -1) height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, 1280);
+                    if(width == -1) width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, 768);
+                    commands.add("wm size " + width + "x" + height);
+                }
+                if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_OVERSCAN_ENABLED)) {
+                    int leftOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_LEFT, 0) * width / 100f);
+                    int rightOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_RIGHT, 0) * width / 100f);
+                    int topOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_TOP, 0) * height / 100f);
+                    int bottomOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_BOTTOM, 0) * height / 100f);
+                    commands.add("wm overscan " + leftOverscan + "," + topOverscan + "," + rightOverscan + "," + bottomOverscan);
+                }
+                if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_DENSITY_ENABLED)) {
+                    int density = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DENSITY_VALUE, -1);
+                    if(density != -1) {
+                        commands.add("wm density " + density);
+                    }
                 }
                 PreferencesHelper.setPreference(ScreenShiftService.this,
                         PreferencesHelper.KEY_MASTER_SWITCH_ON, true);
+                List<String> results = Shell.SU.run(commands);
+                for (String result : results){
+                    Log.i("ScreenShiftService", result);
+                }
                 mSendBroadcast = booleans[0];
+                mPostNotification = booleans[1];
                 return true;
             }
 
             @Override
             protected void onPostExecute(Boolean result) {
                 super.onPostExecute(result);
-                postNotification("Display in custom mode");
+                if(mPostNotification) {
+                    postNotification("Display in custom mode");
+                }
                 if(!result){
                     Toast.makeText(ScreenShiftService.this,
                             "Couldn't acquire root permissions", Toast.LENGTH_SHORT).show();
-                    stop(true);
+                    stop(true, true);
                 }
                 if(mSendBroadcast){
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
                             .sendBroadcast(new Intent(ACTION_START));
                 }
             }
-        }.execute(sendBroadcast);
+        }.execute(sendBroadcast, postNotification);
     }
 
-    private void stop(boolean sendBroadcast){
+    private void stop(boolean sendBroadcast, boolean postNotification){
         new AsyncTask<Boolean, Void, Void>() {
-            private boolean mSendBroadcast;
+            private boolean mSendBroadcast, mPostNotification;
             @Override
             protected Void doInBackground(Boolean... booleans) {
+                PreferencesHelper.setPreference(ScreenShiftService.this,
+                        PreferencesHelper.KEY_MASTER_SWITCH_ON, false);
                 List<String> results = Shell.SU.run(getResetCommands());
                 for (String result : results){
                     Log.i("ScreenShiftService", result);
                 }
-                PreferencesHelper.setPreference(ScreenShiftService.this,
-                        PreferencesHelper.KEY_MASTER_SWITCH_ON, false);
                 mSendBroadcast = booleans[0];
+                mPostNotification = booleans[1];
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                postNotification("Display in default mode");
+                if(mPostNotification) {
+                    postNotification("Display in default mode");
+                }
                 if(mSendBroadcast){
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
                             .sendBroadcast(new Intent(ACTION_STOP));
                 }
             }
-        }.execute(sendBroadcast);
+        }.execute(sendBroadcast, postNotification);
     }
 
     private void saveWidthHeight(){
