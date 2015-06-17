@@ -7,4 +7,9 @@
     <string name="heading_resolution">Resolution</string>
     <string name="heading_overscan">Overscan %</string>
     <string name="heading_density">Density</string>
+    <string name="title_activity_options">Options</string>
+    <string name="key_set_on_boot">set_on_boot</string>
+    <string name="key_show_notification">show_notification</string>
+    <string name="key_display_mode_in_call">in_call_list</string>
+    <string name="title_activity_general_settings">More Settings</string>
 </resources>

@@ -22,6 +22,25 @@
             android:layout_height="wrap_content"
             android:id="@+id/layout_cards"
             android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/color_theme_light">
+                <Button
+                    android:id="@+id/button_load_profile"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="Load profile"
+                    android:layout_height="wrap_content"
+                    style="@style/ButtonBarButton"/>
+                <Button
+                    android:id="@+id/button_save_profile"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="Save profile"
+                    style="@style/ButtonBarButton"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
             <android.support.v7.widget.CardView
                 android:layout_marginRight="@dimen/activity_vertical_margin"
                 android:layout_marginLeft="@dimen/activity_vertical_margin"
@@ -261,6 +280,25 @@
                 </RelativeLayout>
             </android.support.v7.widget.CardView>
 
+            <android.support.v7.widget.CardView
+                android:layout_marginRight="@dimen/activity_vertical_margin"
+                android:layout_marginLeft="@dimen/activity_vertical_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:id="@+id/card_view_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/custom_bg"
+                android:background="@android:color/white"
+                card_view:cardCornerRadius="4dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/morecard_margin"
+                    android:textSize="20sp"
+                    android:textColor="@android:color/black"
+                    android:id="@+id/button_more_settings"
+                    android:text="More Settings..."/>
+            </android.support.v7.widget.CardView>
             <View
                 android:layout_width="@dimen/fab_size"
                 android:layout_height="@dimen/fab_size"

@@ -1,0 +1,27 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="@string/key_set_on_boot"
+        android:title="@string/pref_title_set_on_boot"
+        android:summary="@string/pref_description_set_on_boot"
+        android:defaultValue="false" />
+
+    <CheckBoxPreference
+        android:key="@string/key_show_notification"
+        android:title="@string/pref_title_show_notification"
+        android:summary="@string/pref_description_show_notification"
+        android:defaultValue="true" />
+
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+    <ListPreference
+        android:key="@string/key_display_mode_in_call"
+        android:title="@string/pref_title_display_mode_in_call"
+        android:defaultValue="-1"
+        android:entries="@array/pref_in_call_list_titles"
+        android:entryValues="@array/pref_in_call_list_values"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+</PreferenceScreen>

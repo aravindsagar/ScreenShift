@@ -40,8 +40,11 @@ public class ScreenShiftService extends Service {
     public static final String ACTION_STOP = "action_stop";
     public static final String ACTION_TOGGLE = "action_toggle";
     public static final String ACTION_SAVE_HEIGHT_WIDTH = "action_save_height_width";
+    public static final String ACTION_SET_NOTIFICATION = "set_notification";
+
     public static final String EXTRA_SEND_BROADCAST = "send_broadcast";
     public static final String EXTRA_POST_NOTIFICATION = "post_notification";
+    public static final String EXTRA_SET_NOTIFICATION = "extra_set_notification";
 
     @Override
     public void onCreate() {
@@ -49,15 +52,38 @@ public class ScreenShiftService extends Service {
     }
 
     private void postNotification(String text) {
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-        Intent intent = new Intent(this, ScreenShiftService.class);
-        intent.setAction(ACTION_TOGGLE);
-        intent.putExtra(EXTRA_SEND_BROADCAST, true);
-        PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification notification = notificationBuilder.setContentTitle("Screen shift").
-                setSmallIcon(R.mipmap.ic_launcher).setContentText(text).
-                setContentIntent(pi).build();
-        startForeground(1, notification);
+        postNotification(text, null);
+    }
+    private void postNotification(String text, Boolean override) {
+        if(override == null) {
+            if (PreferencesHelper.getBoolPreference(this, getString(R.string.key_show_notification), true)) {
+                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+                Intent intent = new Intent(this, ScreenShiftService.class);
+                intent.setAction(ACTION_TOGGLE);
+                intent.putExtra(EXTRA_SEND_BROADCAST, true);
+                PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                Notification notification = notificationBuilder.setContentTitle("Screen shift").
+                        setSmallIcon(R.mipmap.ic_launcher).setContentText(text).
+                        setContentIntent(pi).build();
+                startForeground(1, notification);
+            } else {
+                stopForeground(true);
+            }
+        } else {
+            if(override) {
+                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+                Intent intent = new Intent(this, ScreenShiftService.class);
+                intent.setAction(ACTION_TOGGLE);
+                intent.putExtra(EXTRA_SEND_BROADCAST, true);
+                PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                Notification notification = notificationBuilder.setContentTitle("Screen shift").
+                        setSmallIcon(R.mipmap.ic_launcher).setContentText(text).
+                        setContentIntent(pi).build();
+                startForeground(1, notification);
+            } else {
+                stopForeground(true);
+            }
+        }
     }
 
     @Override
@@ -71,16 +97,20 @@ public class ScreenShiftService extends Service {
             String action = intent.getAction();
             boolean sendBroadcast = intent.getBooleanExtra(EXTRA_SEND_BROADCAST, false);
             boolean postNotification = intent.getBooleanExtra(EXTRA_POST_NOTIFICATION, true);
-            Log.d("send_broadcast", sendBroadcast+"");
-            Log.d("post_notification", postNotification+"");
             if(ACTION_START.equals(action)) {
                 start(sendBroadcast, postNotification);
             } else if(ACTION_STOP.equals(action)) {
                 stop(sendBroadcast, postNotification);
             } else if(ACTION_TOGGLE.equals(action)) {
                 toggle(sendBroadcast, postNotification);
-            } else if(ACTION_SAVE_HEIGHT_WIDTH.equals(action)){
+            } else if(ACTION_SAVE_HEIGHT_WIDTH.equals(action)) {
                 saveWidthHeight();
+            } else if(ACTION_SET_NOTIFICATION.equals(action)) {
+                if(intent.getBooleanExtra(EXTRA_SET_NOTIFICATION, true)) {
+                    postNotification("Touch to toggle", true);
+                } else {
+                    postNotification("", false);
+                }
             }
         }
         return START_STICKY;
@@ -110,6 +140,8 @@ public class ScreenShiftService extends Service {
                     if(height == -1) height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, 1280);
                     if(width == -1) width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, 768);
                     commands.add("wm size " + width + "x" + height);
+                } else {
+                    commands.add("wm size reset");
                 }
                 if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_OVERSCAN_ENABLED)) {
                     int leftOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_LEFT, 0) * width / 100f);
@@ -117,12 +149,16 @@ public class ScreenShiftService extends Service {
                     int topOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_TOP, 0) * height / 100f);
                     int bottomOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_BOTTOM, 0) * height / 100f);
                     commands.add("wm overscan " + leftOverscan + "," + topOverscan + "," + rightOverscan + "," + bottomOverscan);
+                } else {
+                    commands.add("wm overscan reset");
                 }
                 if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_DENSITY_ENABLED)) {
                     int density = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DENSITY_VALUE, -1);
                     if(density != -1) {
                         commands.add("wm density " + density);
                     }
+                } else {
+                    commands.add("wm density reset");
                 }
                 PreferencesHelper.setPreference(ScreenShiftService.this,
                         PreferencesHelper.KEY_MASTER_SWITCH_ON, true);

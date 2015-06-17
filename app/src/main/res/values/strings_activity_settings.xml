@@ -1,0 +1,33 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_set_on_boot">Set on boot</string>
+    <string name="pref_description_set_on_boot">Automatically switch to custom display mode after
+        device boots up
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_description_show_notification">Show notification in the status bar area to toggle between Normal and Custom display modes</string>
+    <string name="pref_title_show_notification">Show toggle notification</string>
+
+    <string name="pref_title_display_mode_in_call">Display mode during call</string>
+    <string-array name="pref_in_call_list_titles">
+        <item>Use Current Setting</item>
+        <item>Always default display mode</item>
+        <item>Always custom display mode</item>
+    </string-array>
+    <string-array name="pref_in_call_list_values">
+        <item>0</item>
+        <item>-1</item>
+        <item>1</item>
+    </string-array>
+
+
+</resources>

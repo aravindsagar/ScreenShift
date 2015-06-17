@@ -9,7 +9,6 @@ import java.util.Date;
 
 import static com.sagar.screenshift.PreferencesHelper.KEY_LAST_BOOT_TIME;
 import static com.sagar.screenshift.PreferencesHelper.KEY_MASTER_SWITCH_ON;
-import static com.sagar.screenshift.PreferencesHelper.KEY_SET_ON_BOOT;
 import static com.sagar.screenshift.ScreenShiftService.ACTION_START;
 import static com.sagar.screenshift.ScreenShiftService.ACTION_STOP;
 import static com.sagar.screenshift.ScreenShiftService.EXTRA_POST_NOTIFICATION;
@@ -28,11 +27,11 @@ public class BootCompleteReceiver extends BroadcastReceiver {
                 if(currentBootTime - lastBootTime <= 1000*60*10) {
                     context.startService(new Intent(context, ScreenShiftService.class)
                             .setAction(ACTION_STOP).putExtra(EXTRA_POST_NOTIFICATION, false));
-                    PreferencesHelper.setPreference(context, KEY_SET_ON_BOOT, false);
+                    PreferencesHelper.setPreference(context, context.getString(R.string.key_set_on_boot), false);
                 }
             }
             PreferencesHelper.setPreference(context, KEY_LAST_BOOT_TIME, currentBootTime);
-            if(PreferencesHelper.getBoolPreference(context, KEY_SET_ON_BOOT, true) && PreferencesHelper.getBoolPreference(context, KEY_MASTER_SWITCH_ON)) {
+            if(PreferencesHelper.getBoolPreference(context, context.getString(R.string.key_set_on_boot), true) && PreferencesHelper.getBoolPreference(context, KEY_MASTER_SWITCH_ON)) {
                 context.startService(new Intent(context, ScreenShiftService.class)
                         .setAction(ACTION_START));
             } else {

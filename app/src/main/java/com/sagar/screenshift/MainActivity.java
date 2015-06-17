@@ -1,17 +1,18 @@
 package com.sagar.screenshift;
 
 import android.animation.Animator;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -26,12 +27,15 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.sagar.screenshift.profileDb.ProfileDbContract.ProfileEntry;
 
 import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_ENABLED;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_VALUE;
@@ -46,10 +50,12 @@ import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DialogFragments.DialogListener {
 
     /*private static final float ENABLED_ALPHA = 1f;
     private static final float DISABLED_ALPHA = 0.7f;*/
+
+    private static boolean onPostResumeRunDialog = false;
 
     SwitchCompat masterSwitch;
     View cardsLayout;
@@ -66,21 +72,25 @@ public class MainActivity extends AppCompatActivity {
     boolean resolutionEnabledChanged, densityEnabledChanged, overscanEnabledChanged, widthChanged,
             heightChanged, leftOverscanChanged, rightOverscanChanged, topOverscanChanged,
             bottomOverscanChanged, densityChanged;
-    boolean overrideWarning = false;
+    boolean overrideWarning = false, showTimeout = true;
+    Profile[] profiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //TODO add a one-time product tour, backward compatibility, better list of saved profiles
         super.onCreate(savedInstanceState);
         startService(new Intent(this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH));
         setContentView(R.layout.activity_main);
         init(savedInstanceState);
         setUpToolbar();
+
     }
 
     private void init(Bundle savedInstanceState) {
         readSavedData();
         setupFAB(savedInstanceState);
         setUpCards(savedInstanceState);
+        setUpProfileButtons();
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             Log.w("Screen Shift", "Overscan and density not available in this api level");
             if(overscanCard != null){
@@ -100,7 +110,29 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, filter);
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if(onPostResumeRunDialog) {
+            Log.d("onPostResume", "Running");
+            final Runnable confirmRunnable = new Runnable(){
+                @Override
+                public void run() {
+                    try {
+                        Log.d("confirmRunnable", "Running");
+                        new DialogFragments.KeepSettingsDialog().show(getSupportFragmentManager(), "keepSettingsDialog");
+                        onPostResumeRunDialog = false;
+                    } catch (IllegalStateException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            new Handler().post(confirmRunnable);
+        }
+    }
+
     private void setUpToolbar() {
+        showTimeout = false;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -136,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             masterSwitch.setChecked(masterSwitchOn);
         }
+        showTimeout = true;
     }
 
     private void setUpCards(Bundle savedInstanceState){
@@ -144,12 +177,62 @@ public class MainActivity extends AppCompatActivity {
         setupOverscanCard();
         setupDensityCard();
 
+        CardView optionsCard = (CardView) findViewById(R.id.card_view_options);
+//        TextView moreSettingsButton = (TextView) findViewById(R.id.button_more_settings);
+        optionsCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            }
+        });
         if(savedInstanceState != null) {
             return;
         }
         populateResolutionCard();
         populateOverscanCard();
         populateDensityCard();
+    }
+
+    private void setUpProfileButtons(){
+        Button loadProfileButton = (Button) findViewById(R.id.button_load_profile),
+                saveProfileButton = (Button) findViewById(R.id.button_save_profile);
+        loadProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Cursor cursor = getContentResolver().query(ProfileEntry.CONTENT_URI, null, null, null, null);
+                if(cursor.moveToFirst()) {
+                    profiles = new Profile[cursor.getCount()];
+                    String[] itemStrings = new String[cursor.getCount()];
+                    for(int i=0; !cursor.isAfterLast(); cursor.moveToNext(), i++){
+                        Profile profile = new Profile();
+                        profile.isResolutionEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_ENABLED)) == 1;
+                        profile.isDensityEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_DENSITY_ENABLED)) == 1;
+                        profile.isOverscanEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_ENABLED)) == 1;
+                        profile.resolutionWidth = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_WIDTH));
+                        profile.resolutionHeight = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_HEIGHT));
+                        profile.densityValue = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_DENSITY_VALUE));
+                        profile.overscanLeft = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_LEFT));
+                        profile.overscanRight = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_RIGHT));
+                        profile.overscanTop = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_TOP));
+                        profile.overscanBottom = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_BOTTOM));
+                        itemStrings[i] = cursor.getString(cursor.getColumnIndex(ProfileEntry.COLUMN_NAME)) + " " + profile.resolutionWidth + "x" + profile.resolutionHeight;
+                        profiles[i] = profile;
+                    }
+                    Bundle bundle = new Bundle();
+                    bundle.putStringArray(DialogFragments.KEY_LIST_ITEM_STRINGS, itemStrings);
+                    DialogFragment dialogFragment = new DialogFragments.LoadProfileDialog();
+                    dialogFragment.setArguments(bundle);
+                    dialogFragment.show(getSupportFragmentManager(), "loadProfileDialog");
+                }
+                cursor.close();
+            }
+        });
+        saveProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DialogFragments.SaveProfileDialog().show(getSupportFragmentManager(), "saveProfileDialog");
+            }
+        });
     }
 
     private void setupResolutionCard(){
@@ -343,10 +426,6 @@ public class MainActivity extends AppCompatActivity {
                             .setListener((Animator.AnimatorListener) fabHideAnimatorListener);
                 }
             } else {
-                StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-                for(StackTraceElement e: stackTraceElements){
-                    Log.d("StackTrace", e.getLineNumber() + ": " + e.toString());
-                }
                 doneFab.setVisibility(View.VISIBLE);
                 fabBackground.setVisibility(View.VISIBLE);
                 doneFab.animate().rotation(0).translationY(0).setListener((Animator.AnimatorListener) fabShowAnimatorListener);
@@ -465,10 +544,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 float ddsize = getDiagonalDisplaySize();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
-                    doneFab.animate().translationX(getDisplayWidth() / 2 - doneFab.getX() - doneFab.getWidth() / 2)
-                            .translationY(-doneFab.getY() + getDisplayHeight() / 2 - doneFab.getHeight() / 2);
-                    fabBackground.animate().translationX(getDisplayWidth() / 2 - doneFab.getX() - doneFab.getWidth() / 2)
-                            .translationY(-doneFab.getY() + getDisplayHeight() / 2 - doneFab.getHeight() / 2)
+//                    Log.d("MainActivity", getDisplayWidth() + "x" + getDisplayHeight());
+                    float fabTop = getDisplayHeight() - getResources().getDimension(R.dimen.fab_size) - 2*getResources().getDimension(R.dimen.activity_vertical_margin);
+                    float translationX = getDisplayWidth() / 2 - doneFab.getLeft() - doneFab.getWidth() / 2,
+                            translationY = -fabTop + getDisplayHeight() / 2 - doneFab.getHeight() / 2;
+                    Log.d("MainActivity", translationX + "x" + translationY);
+                    doneFab.animate().translationX(translationX)
+                            .translationY(translationY);
+                    fabBackground.animate().translationX(translationX)
+                            .translationY(translationY)
                             .scaleX(ddsize / doneFab.getWidth()).scaleY(ddsize / doneFab.getHeight());
                 } else {
                     Toast.makeText(MainActivity.this, "Settings saved", Toast.LENGTH_SHORT).show();
@@ -535,17 +619,11 @@ public class MainActivity extends AppCompatActivity {
         if(!overrideWarning && (width < displaySize.width/2 || width > displaySize.width * 2
                 || height < displaySize.height/2 || height > displaySize.height * 2)){
             resolutionCard.setBackgroundColor(getResources().getColor(R.color.color_warning_background));
-            new AlertDialog.Builder(this)
-                    .setMessage("Resolution might make the display unusable. Are you sure you want to continue? Successively reboot twice if you continue and display is unusable.")
-                    .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            overrideWarning = true;
-                            doneFab.performClick();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            Bundle bundle = new Bundle();
+            bundle.putString(DialogFragments.KEY_WARNING_STRING, "Resolution might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.");
+            DialogFragment fragment = new DialogFragments.DisplaySettingsWarningDialog();
+            fragment.setArguments(bundle);
+            fragment.show(getSupportFragmentManager(), "resolutionWarningDialog");
             return false;
         }
         leftOverscan = leftSeekBar.getProgress();
@@ -554,17 +632,11 @@ public class MainActivity extends AppCompatActivity {
         bottomOverscan = bottomSeekBar.getProgress();
         if(!overrideWarning && overscanSwitch.isChecked() && (leftOverscan+rightOverscan > 50 || topOverscan+bottomOverscan > 50)){
             overscanCard.setBackgroundColor(getResources().getColor(R.color.color_warning_background));
-            new AlertDialog.Builder(this)
-                    .setMessage("Overscan might make the display unusable. Are you sure you want to continue? Successively reboot twice if you continue and display is unusable.")
-                    .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            overrideWarning = true;
-                            doneFab.performClick();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            Bundle bundle = new Bundle();
+            bundle.putString(DialogFragments.KEY_WARNING_STRING, "Overscan might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.");
+            DialogFragment fragment = new DialogFragments.DisplaySettingsWarningDialog();
+            fragment.setArguments(bundle);
+            fragment.show(getSupportFragmentManager(), "overscanWarningDialog");
             return false;
         }
         overrideWarning = false;
@@ -593,7 +665,9 @@ public class MainActivity extends AppCompatActivity {
     private void enableService(){
         PreferencesHelper.setPreference(this, KEY_MASTER_SWITCH_ON, true);
         startService(new Intent(MainActivity.this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_START));
-//        enableAllCards();
+        if(!showTimeout) return;
+
+        onPostResumeRunDialog = true;
     }
 
     private void disableService(){
@@ -672,6 +746,75 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onPositiveButton(DialogFragment fragment, String result) {
+        if(fragment instanceof DialogFragments.SaveProfileDialog){
+            String name = result.trim();
+            ContentValues values = new ContentValues();
+            values.put(ProfileEntry.COLUMN_NAME, name);
+            values.put(ProfileEntry.COLUMN_RESOLUTION_ENABLED, resolutionSwitch.isChecked() ? 1 : 0);
+            values.put(ProfileEntry.COLUMN_OVERSCAN_ENABLED, overscanSwitch.isChecked() ? 1 : 0);
+            values.put(ProfileEntry.COLUMN_DENSITY_ENABLED, densitySwitch.isChecked() ? 1 : 0);
+            String width = widthText.getText().toString(),
+                    height = heightText.getText().toString(),
+                    density = densityText.getText().toString();
+            if (!width.isEmpty())
+                values.put(ProfileEntry.COLUMN_RESOLUTION_WIDTH, Integer.parseInt(width));
+            if (!height.isEmpty())
+                values.put(ProfileEntry.COLUMN_RESOLUTION_HEIGHT, Integer.parseInt(height));
+            if (!density.isEmpty())
+                values.put(ProfileEntry.COLUMN_DENSITY_VALUE, Integer.parseInt(density));
+            values.put(ProfileEntry.COLUMN_OVERSCAN_LEFT, leftSeekBar.getProgress());
+            values.put(ProfileEntry.COLUMN_OVERSCAN_RIGHT, rightSeekBar.getProgress());
+            values.put(ProfileEntry.COLUMN_OVERSCAN_TOP, topSeekBar.getProgress());
+            values.put(ProfileEntry.COLUMN_OVERSCAN_BOTTOM, bottomSeekBar.getProgress());
+            Cursor existCursor = getContentResolver().query(ProfileEntry.CONTENT_URI,
+                    null,
+                    ProfileEntry.COLUMN_NAME + " = ? ",
+                    new String[]{name},
+                    null);
+            if (existCursor.moveToFirst()) {
+                long id = existCursor.getInt(existCursor.getColumnIndex(ProfileEntry._ID));
+                getContentResolver().update(ProfileEntry.buildProfileUriWithId(id), values, null, null);
+            } else {
+                getContentResolver().insert(ProfileEntry.CONTENT_URI, values);
+            }
+            existCursor.close();
+        } else if(fragment instanceof DialogFragments.DisplaySettingsWarningDialog) {
+            overrideWarning = true;
+            doneFab.performClick();
+        }
+    }
+
+    @Override
+    public void onNegativeButton(DialogFragment fragment) {
+        if(fragment instanceof DialogFragments.KeepSettingsDialog) {
+            disableService();
+        }
+    }
+
+    @Override
+    public void onItemClick(DialogFragment fragment, int i) {
+        if(fragment instanceof DialogFragments.LoadProfileDialog) {
+            Log.d("OnClickListener", "Clicked item " + i);
+            if(profiles[i].resolutionWidth != -1)
+                widthText.setText(String.valueOf(profiles[i].resolutionWidth));
+            if(profiles[i].resolutionHeight != -1)
+                heightText.setText(String.valueOf(profiles[i].resolutionHeight));
+            if(profiles[i].densityValue != -1)
+                densityText.setText(String.valueOf(profiles[i].densityValue));
+            leftSeekBar.setProgress(profiles[i].overscanLeft);
+            rightSeekBar.setProgress(profiles[i].overscanRight);
+            topSeekBar.setProgress(profiles[i].overscanTop);
+            bottomSeekBar.setProgress(profiles[i].overscanBottom);
+            setSwitchCheckedAndCallListener(resolutionSwitch, profiles[i].isResolutionEnabled);
+            setSwitchCheckedAndCallListener(densitySwitch, profiles[i].isDensityEnabled);
+            setSwitchCheckedAndCallListener(overscanSwitch, profiles[i].isOverscanEnabled);
+            setFabVisibilityIfRequired();
+            doneFab.performClick();
+        }
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver(){
