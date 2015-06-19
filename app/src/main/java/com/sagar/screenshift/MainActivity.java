@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //TODO better list of saved profiles
+        //TODO better list of saved profiles on next commit
         super.onCreate(savedInstanceState);
         if(!PreferencesHelper.getBoolPreference(this, KEY_TUTORIAL_DONE)) {
             startActivity(new Intent(this, ProductTourActivity.class));
