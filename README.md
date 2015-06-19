@@ -16,7 +16,7 @@ Needs root in JB 4.3 and higher versions.
 
 #License
 
-Copyright 2014 Aravind Sagar, and Priyan Vaithilingam
+Copyright 2014 Aravind Sagar
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use the files in this repository except in compliance with the License.
