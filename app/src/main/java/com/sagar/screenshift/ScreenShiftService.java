@@ -57,33 +57,28 @@ public class ScreenShiftService extends Service {
     private void postNotification(String text, Boolean override) {
         if(override == null) {
             if (PreferencesHelper.getBoolPreference(this, getString(R.string.key_show_notification), true)) {
-                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-                Intent intent = new Intent(this, ScreenShiftService.class);
-                intent.setAction(ACTION_TOGGLE);
-                intent.putExtra(EXTRA_SEND_BROADCAST, true);
-                PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                Notification notification = notificationBuilder.setContentTitle("Screen shift").
-                        setSmallIcon(R.mipmap.ic_launcher).setContentText(text).
-                        setContentIntent(pi).build();
-                startForeground(1, notification);
+                startForeground(1, buildNotification(text));
             } else {
                 stopForeground(true);
             }
         } else {
             if(override) {
-                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-                Intent intent = new Intent(this, ScreenShiftService.class);
-                intent.setAction(ACTION_TOGGLE);
-                intent.putExtra(EXTRA_SEND_BROADCAST, true);
-                PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                Notification notification = notificationBuilder.setContentTitle("Screen shift").
-                        setSmallIcon(R.mipmap.ic_launcher).setContentText(text).
-                        setContentIntent(pi).build();
-                startForeground(1, notification);
+                startForeground(1, buildNotification(text));
             } else {
                 stopForeground(true);
             }
         }
+    }
+
+    private Notification buildNotification(String text){
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+        Intent intent = new Intent(this, ScreenShiftService.class);
+        intent.setAction(ACTION_TOGGLE);
+        intent.putExtra(EXTRA_SEND_BROADCAST, true);
+        PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return notificationBuilder.setContentTitle("Screen shift").
+                setSmallIcon(R.mipmap.ic_launcher).setContentText(text).setPriority(NotificationCompat.PRIORITY_MIN).
+                setContentIntent(pi).build();
     }
 
     @Override

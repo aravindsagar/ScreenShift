@@ -46,19 +46,42 @@ public class ProfileDbHelper extends SQLiteOpenHelper {
         //TODO add more popular devices
         switch (version) {
             case 1:
-                ContentValues[] valuesArray = new ContentValues[2];
+                ContentValues[] valuesArray = new ContentValues[5];
                 ContentValues n4Values = new ContentValues();
                 n4Values.put(ProfileEntry.COLUMN_NAME, "Nexus 4");
                 n4Values.put(ProfileEntry.COLUMN_RESOLUTION_ENABLED, 1);
                 n4Values.put(ProfileEntry.COLUMN_RESOLUTION_HEIGHT, 1280);
                 n4Values.put(ProfileEntry.COLUMN_RESOLUTION_WIDTH, 768);
                 valuesArray[0] = n4Values;
+
                 ContentValues n5Values = new ContentValues();
-                n5Values.put(ProfileEntry.COLUMN_NAME, "Nexus 5");
+                n5Values.put(ProfileEntry.COLUMN_NAME, "Nexus 5/HTC One M9");
                 n5Values.put(ProfileEntry.COLUMN_RESOLUTION_ENABLED, 1);
                 n5Values.put(ProfileEntry.COLUMN_RESOLUTION_HEIGHT, 1920);
                 n5Values.put(ProfileEntry.COLUMN_RESOLUTION_WIDTH, 1080);
                 valuesArray[1] = n5Values;
+
+                ContentValues n6Values = new ContentValues();
+                n6Values.put(ProfileEntry.COLUMN_NAME, "Nexus 6/Note 4/Galaxy S6/LG G4");
+                n6Values.put(ProfileEntry.COLUMN_RESOLUTION_ENABLED, 1);
+                n6Values.put(ProfileEntry.COLUMN_RESOLUTION_HEIGHT, 2560);
+                n6Values.put(ProfileEntry.COLUMN_RESOLUTION_WIDTH, 1440);
+                valuesArray[2] = n6Values;
+
+                ContentValues n7Values = new ContentValues();
+                n7Values.put(ProfileEntry.COLUMN_NAME, "Nexus 7 2013");
+                n7Values.put(ProfileEntry.COLUMN_RESOLUTION_ENABLED, 1);
+                n7Values.put(ProfileEntry.COLUMN_RESOLUTION_HEIGHT, 1920);
+                n7Values.put(ProfileEntry.COLUMN_RESOLUTION_WIDTH, 1200);
+                valuesArray[3] = n7Values;
+
+                ContentValues gnValues = new ContentValues();
+                gnValues.put(ProfileEntry.COLUMN_NAME, "Galaxy Nexus");
+                gnValues.put(ProfileEntry.COLUMN_RESOLUTION_ENABLED, 1);
+                gnValues.put(ProfileEntry.COLUMN_RESOLUTION_HEIGHT, 1280);
+                gnValues.put(ProfileEntry.COLUMN_RESOLUTION_WIDTH, 720);
+                valuesArray[4] = gnValues;
+
                 return valuesArray;
         }
         return null;
