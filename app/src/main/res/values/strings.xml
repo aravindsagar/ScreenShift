@@ -14,7 +14,7 @@
     <string name="title_activity_product_tour">Product Tour</string>
 
     <string name="welcom_head_01">Customize your display</string>
-    <string name="welcom_content_01">Change your display resolution, density, and overscan. Needs root in Android 4.3 and up.</string>
+    <string name="welcom_content_01">Change your display resolution, density, and overscan.</string>
     <string name="welcom_head_02">Improve gaming and app testing</string>
     <string name="welcom_content_02">Test apps in multiple resolutions using a single device. Play games at lower resolution to improve performance.</string>
     <string name="welcom_head_03">In case anything goes wrong</string>
