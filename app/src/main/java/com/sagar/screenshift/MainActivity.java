@@ -25,6 +25,8 @@ import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -48,6 +50,7 @@ import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_TOP;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_ENABLED;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
+import static com.sagar.screenshift.PreferencesHelper.KEY_TUTORIAL_DONE;
 
 
 public class MainActivity extends AppCompatActivity implements DialogFragments.DialogListener {
@@ -77,8 +80,13 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //TODO add a one-time product tour, backward compatibility, better list of saved profiles
+        //TODO better list of saved profiles
         super.onCreate(savedInstanceState);
+        if(!PreferencesHelper.getBoolPreference(this, KEY_TUTORIAL_DONE)) {
+            startActivity(new Intent(this, ProductTourActivity.class));
+            finish();
+            overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out);
+        }
         startService(new Intent(this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH));
         setContentView(R.layout.activity_main);
         init(savedInstanceState);
@@ -92,12 +100,9 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         setUpCards(savedInstanceState);
         setUpProfileButtons();
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            Log.w("Screen Shift", "Overscan and density not available in this api level");
+            Log.w("Screen Shift", "Overscan not available in this api level");
             if(overscanCard != null){
                 overscanCard.setVisibility(View.GONE);
-            }
-            if(densityCard != null){
-                densityCard.setVisibility(View.GONE);
             }
         }
     }
@@ -237,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private void setupResolutionCard(){
         resolutionCard = (CardView) cardsLayout.findViewById(R.id.card_view_resolution);
-        resolutionCard.setBackgroundColor(Color.WHITE);
+        resolutionCard.setCardBackgroundColor(Color.WHITE);
         resolutionSwitch = (SwitchCompat) resolutionCard.findViewById(R.id.switch_resolution);
         resolutionInnerLayout = (LinearLayout) resolutionCard.findViewById(R.id.linear_layout_resolution);
         widthText = (EditText) resolutionInnerLayout.findViewById(R.id.edit_text_width);
@@ -285,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private void setupOverscanCard(){
         overscanCard = (CardView) cardsLayout.findViewById(R.id.card_view_overscan);
-        overscanCard.setBackgroundColor(Color.WHITE);
+        overscanCard.setCardBackgroundColor(Color.WHITE);
         overscanSwitch = (SwitchCompat) overscanCard.findViewById(R.id.switch_overscan);
         leftOverscanLayout = (LinearLayout) overscanCard.findViewById(R.id.linear_layout_overscan_left);
         rightOverscanLayout = (LinearLayout) overscanCard.findViewById(R.id.linear_layout_overscan_right);
@@ -369,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private void setupDensityCard(){
         densityCard = (CardView) cardsLayout.findViewById(R.id.card_view_density);
-        densityCard.setBackgroundColor(Color.WHITE);
+        densityCard.setCardBackgroundColor(Color.WHITE);
         densitySwitch = (SwitchCompat) densityCard.findViewById(R.id.switch_density);
         densityText = (EditText) densityCard.findViewById(R.id.edit_text_density);
 
@@ -534,9 +539,9 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         doneFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                resolutionCard.setBackgroundColor(Color.WHITE);
-                overscanCard.setBackgroundColor(Color.WHITE);
-                densityCard.setBackgroundColor(Color.WHITE);
+                resolutionCard.setCardBackgroundColor(Color.WHITE);
+                overscanCard.setCardBackgroundColor(Color.WHITE);
+                densityCard.setCardBackgroundColor(Color.WHITE);
                 disableAllCards();
                 if (!validateAndSaveData()) {
                     enableAllCards();
@@ -604,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             if(!heightText.getText().toString().isEmpty()) height = Integer.parseInt(heightText.getText().toString());
             else height = displaySize.height;
         } catch (NumberFormatException e) {
-            resolutionCard.setBackgroundColor(getResources().getColor(R.color.color_error_background));
+            resolutionCard.setCardBackgroundColor(getResources().getColor(R.color.color_error_background));
             Toast.makeText(this, "Enter valid resolution values", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -612,13 +617,13 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             if(!densityText.getText().toString().isEmpty()) density = Integer.parseInt(densityText.getText().toString());
             else density = 0;
         } catch (NumberFormatException e) {
-            densityCard.setBackgroundColor(getResources().getColor(R.color.color_error_background));
+            densityCard.setCardBackgroundColor(getResources().getColor(R.color.color_error_background));
             Toast.makeText(this, "Enter valid density value", Toast.LENGTH_SHORT).show();
             return false;
         }
         if(!overrideWarning && (width < displaySize.width/2 || width > displaySize.width * 2
                 || height < displaySize.height/2 || height > displaySize.height * 2)){
-            resolutionCard.setBackgroundColor(getResources().getColor(R.color.color_warning_background));
+            resolutionCard.setCardBackgroundColor(getResources().getColor(R.color.color_warning_background));
             Bundle bundle = new Bundle();
             bundle.putString(DialogFragments.KEY_WARNING_STRING, "Resolution might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.");
             DialogFragment fragment = new DialogFragments.DisplaySettingsWarningDialog();
@@ -631,7 +636,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         topOverscan = topSeekBar.getProgress();
         bottomOverscan = bottomSeekBar.getProgress();
         if(!overrideWarning && overscanSwitch.isChecked() && (leftOverscan+rightOverscan > 50 || topOverscan+bottomOverscan > 50)){
-            overscanCard.setBackgroundColor(getResources().getColor(R.color.color_warning_background));
+            overscanCard.setCardBackgroundColor(getResources().getColor(R.color.color_warning_background));
             Bundle bundle = new Bundle();
             bundle.putString(DialogFragments.KEY_WARNING_STRING, "Overscan might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.");
             DialogFragment fragment = new DialogFragments.DisplaySettingsWarningDialog();
@@ -667,7 +672,20 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         startService(new Intent(MainActivity.this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_START));
         if(!showTimeout) return;
 
-        onPostResumeRunDialog = true;
+        final Runnable confirmRunnable = new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    Log.d("confirmRunnable", "Running");
+                    new DialogFragments.KeepSettingsDialog().show(getSupportFragmentManager(), "keepSettingsDialog");
+                    onPostResumeRunDialog = false;
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                    onPostResumeRunDialog = true;
+                }
+            }
+        };
+        new Handler().post(confirmRunnable);
     }
 
     private void disableService(){
@@ -815,6 +833,39 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             setFabVisibilityIfRequired();
             doneFab.performClick();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_view_intro) {
+            startActivity(new Intent(this, ProductTourActivity.class));
+            overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out);
+            return true;
+        } else if(id == R.id.action_about) {
+            startActivity(new Intent(this, AboutActivity.class));
+            return true;
+        } else if(id == R.id.action_share) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, "Screen Shift: Customize yur display. More details at http://aravindsagar.github.io/ScreenShift/");
+            sendIntent.setType("text/plain");
+            startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_to)));
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver(){

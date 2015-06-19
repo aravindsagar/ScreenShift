@@ -2,7 +2,6 @@
     <string name="app_name">Screen Shift</string>
 
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
     <string name="stub_message">Temporary stub. Options and settings will come here.</string>
     <string name="heading_resolution">Resolution</string>
     <string name="heading_overscan">Overscan %</string>
@@ -12,4 +11,21 @@
     <string name="key_show_notification">show_notification</string>
     <string name="key_display_mode_in_call">in_call_list</string>
     <string name="title_activity_general_settings">More Settings</string>
+    <string name="title_activity_product_tour">Product Tour</string>
+
+    <string name="welcom_head_01">Customize your display</string>
+    <string name="welcom_content_01">Change your display resolution, density, and overscan. Needs root in Android 4.3 and up.</string>
+    <string name="welcom_head_02">Improve gaming and app testing</string>
+    <string name="welcom_content_02">Test apps in multiple resolutions using a single device. Play games at lower resolution to improve performance.</string>
+    <string name="welcom_head_03">In case anything goes wrong</string>
+    <string name="welcom_content_03">If you can\'t restore normal display, reboot your device, wait for 2 minutes, and reboot it again.
+        If that fails, issue these commands using adb: am display-size reset &amp;&amp; am display-density reset</string>
+    <string name="title_activity_about">About</string>
+
+    <string name="action_about">About</string>
+    <string name="action_view_intro">View intro</string>
+    <string name="about_head_01">Screen Shift</string>
+    <string name="about_content_01">By Aravind Sagar</string>
+    <string name="action_share">Share this app</string>
+    <string name="send_to">Spread the love!</string>
 </resources>

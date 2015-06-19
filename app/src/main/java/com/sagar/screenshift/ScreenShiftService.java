@@ -129,7 +129,9 @@ public class ScreenShiftService extends Service {
             private boolean mSendBroadcast, mPostNotification;
             @Override
             protected Boolean doInBackground(Boolean... booleans) {
-                if(!Shell.SU.available()) return false;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    if (!Shell.SU.available()) return false;
+                }
                 List<String> commands = new ArrayList<>();
                 int height, width;
                 height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, 1280);
@@ -139,11 +141,12 @@ public class ScreenShiftService extends Service {
                     width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_RESOLUTION_WIDTH, -1);
                     if(height == -1) height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, 1280);
                     if(width == -1) width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, 768);
-                    commands.add("wm size " + width + "x" + height);
+                    commands.add(getResolutionCommand(width, height));
                 } else {
-                    commands.add("wm size reset");
+                    commands.add(getResolutionCommand(-1, -1));
                 }
-                if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_OVERSCAN_ENABLED)) {
+                if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_OVERSCAN_ENABLED)
+                        && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     int leftOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_LEFT, 0) * width / 100f);
                     int rightOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_RIGHT, 0) * width / 100f);
                     int topOverscan = (int) (PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_OVERSCAN_TOP, 0) * height / 100f);
@@ -155,14 +158,19 @@ public class ScreenShiftService extends Service {
                 if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_DENSITY_ENABLED)) {
                     int density = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DENSITY_VALUE, -1);
                     if(density != -1) {
-                        commands.add("wm density " + density);
+                        commands.add(getDensityCommand(density));
                     }
                 } else {
-                    commands.add("wm density reset");
+                    commands.add(getDensityCommand(-1));
                 }
                 PreferencesHelper.setPreference(ScreenShiftService.this,
                         PreferencesHelper.KEY_MASTER_SWITCH_ON, true);
-                List<String> results = Shell.SU.run(commands);
+                List<String> results;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    results = Shell.SU.run(commands);
+                } else {
+                    results =Shell.SH.run(commands);
+                }
                 for (String result : results){
                     Log.i("ScreenShiftService", result);
                 }
@@ -197,7 +205,12 @@ public class ScreenShiftService extends Service {
             protected Void doInBackground(Boolean... booleans) {
                 PreferencesHelper.setPreference(ScreenShiftService.this,
                         PreferencesHelper.KEY_MASTER_SWITCH_ON, false);
-                List<String> results = Shell.SU.run(getResetCommands());
+                List<String> results;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    results = Shell.SU.run(getResetCommands());
+                } else {
+                    results = Shell.SH.run(getResetCommands());
+                }
                 for (String result : results){
                     Log.i("ScreenShiftService", result);
                 }
@@ -226,7 +239,11 @@ public class ScreenShiftService extends Service {
             protected Void doInBackground(Void... voids) {
                 if(PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, -1) == -1
                         || PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, -1) == -1) {
-                    Shell.SU.run(getResetCommands());
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                        Shell.SU.run(getResetCommands());
+                    } else {
+                        Shell.SH.run(getResetCommands());
+                    }
                     DisplaySize displaySize = DisplaySize.getDeviceDisplaySize(ScreenShiftService.this);
                     PreferencesHelper.setPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, displaySize.height);
                     PreferencesHelper.setPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, displaySize.width);
@@ -238,11 +255,50 @@ public class ScreenShiftService extends Service {
 
     List<String> getResetCommands() {
         List<String> commands = new ArrayList<>();
-        commands.add("wm size reset");
-        commands.add("wm density reset");
-        commands.add("wm overscan reset");
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            commands.add("wm size reset");
+            commands.add("wm density reset");
+            commands.add("wm overscan reset");
+        } else {
+            commands.add("am display-size reset");
+            commands.add("am display-density reset");
+        }
         return commands;
     }
+
+    String getResolutionCommand(int width, int height) {
+        if(width == -1 || height == -1) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                return "wm size reset";
+            } else {
+                return "am display-size reset";
+            }
+        } else {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                return "wm size " + width + "x" + height;
+            } else {
+                return "am display-size " + width + "x" + height;
+            }
+        }
+    }
+
+    String getDensityCommand(int density) {
+        if(density == -1) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                return "wm density reset";
+            } else {
+                return "am display-density reset";
+            }
+        } else {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                return "wm density " + density;
+            } else {
+                return "am display-density " + density;
+            }
+        }
+    }
+
+
 
     public static class DisplaySize {
         public int height, width;

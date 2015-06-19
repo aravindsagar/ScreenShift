@@ -7,4 +7,5 @@
     <color name="color_error_background">#73ff0200</color>
     <color name="color_warning_background">#83ffef1b</color>
     <color name="translucent">#63bfbfbf</color>
+    <color name="text_selected">#000000</color>
 </resources>

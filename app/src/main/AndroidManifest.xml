@@ -8,12 +8,12 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name">
+        android:label="@string/app_name" >
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:windowSoftInputMode="stateHidden"
-            android:theme="@style/Theme.MyTheme.NoActionBar" >
+            android:theme="@style/Theme.MyTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,16 +37,17 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/Theme.MyTheme">
+            android:theme="@style/Theme.MyTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sagar.screenshift.MainActivity" />
         </activity>
 
         <provider
-            android:authorities="com.sagar.screenshift.app"
             android:name=".profileDb.ProfileDbProvider"
-            android:exported="false"/>
+            android:authorities="com.sagar.screenshift.app"
+            android:exported="false" />
+
         <receiver android:name=".CallStateReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
@@ -56,6 +57,21 @@
                 <action android:name="com.android.deskclock.ALARM_SNOOZE" />
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".ProductTourActivity"
+            android:label="@string/title_activity_product_tour"
+            android:theme="@style/Theme.MyTheme.NoActionBar" >
+        </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/title_activity_about"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MyTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sagar.screenshift.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

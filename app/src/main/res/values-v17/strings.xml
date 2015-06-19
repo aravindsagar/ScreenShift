@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcom_content_03">If you can\'t restore normal display, reboot your device, wait for 2 minutes after boot-up, and reboot it again.
+        If that fails, issue these commands using adb: wm size reset &amp;&amp; wm density reset</string>
+</resources>

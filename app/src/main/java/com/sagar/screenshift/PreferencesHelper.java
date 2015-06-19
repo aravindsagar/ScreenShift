@@ -29,6 +29,7 @@ public class PreferencesHelper {
     public static final String KEY_DISPLAY_WIDTH = "display_width";
 
     public static final String KEY_LAST_BOOT_TIME = "last_boot_time";
+    public static final String KEY_TUTORIAL_DONE = "tutorial_done";
 
     public static void setPreference(Context context, final String KEY, boolean value){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
