@@ -14,6 +14,14 @@ From JellyBean 4.3 and up, this has been shifted to wm, with additional overscan
 
 Needs root in JB 4.3 and higher versions.
 
+#Screenshots
+<img src="https://raw.githubusercontent.com/aravindsagar/ScreenShift/gh-pages/images/screenshots/screenshot_main.png"> <img src="https://raw.githubusercontent.com/aravindsagar/ScreenShift/gh-pages/images/screenshots/screenshot_about.png">
+<img src="https://raw.githubusercontent.com/aravindsagar/ScreenShift/gh-pages/images/screenshots/screenshot_confirm.png"> <img src="https://raw.githubusercontent.com/aravindsagar/ScreenShift/gh-pages/images/screenshots/screenshot_profile.png">
+
+#More details
+Visit <a href="http://forum.xda-developers.com/android/apps-games/app-screen-shift-change-screen-t3138718">XDA thread</a>, and
+<a href="http://aravindsagar.github.io/ScreenShift/">http://aravindsagar.github.io/ScreenShift/</a>
+
 #License
 
 Copyright 2014 Aravind Sagar
