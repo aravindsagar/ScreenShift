@@ -1,10 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.sagar.screenshift.AboutActivity">
 
-    <?xml version="1.0" encoding="utf-8"?>
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -61,7 +61,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/images"
-                android:layout_alignLeft="@id/images"
+                android:gravity="center"
                 android:layout_marginTop="24dp"
                 android:layout_marginLeft="@dimen/welcome_text_margin"
                 android:layout_marginRight="@dimen/welcome_text_margin"
@@ -71,9 +71,9 @@
             <TextView
                 android:id="@+id/content"
                 android:text="@string/about_content_01"
+                android:gravity="center_horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@id/images"
                 android:layout_below="@+id/heading"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="36dp"
@@ -88,6 +88,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/website"
-        android:text="Website"
-        android:layout_alignParentBottom="true" />
+        android:text="Visit Website"
+        android:layout_alignParentBottom="true"
+        android:height="48dp"
+        android:textColor="@android:color/white"
+        android:background="@color/color_accent"/>
 </RelativeLayout>

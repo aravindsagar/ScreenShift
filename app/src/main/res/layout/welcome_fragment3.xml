@@ -72,7 +72,6 @@
             android:layout_marginLeft="24dip"
             android:layout_marginRight="24dip"
             android:minHeight="@dimen/welcome_content_min_height"
-            android:layout_alignParentBottom="true"
             android:textAppearance="@style/WelcomeContentAppearance" />
 
     </RelativeLayout>
