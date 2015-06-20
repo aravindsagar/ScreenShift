@@ -88,7 +88,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/website"
-        android:text="Visit Website"
+        android:text="@string/visit_website"
         android:layout_alignParentBottom="true"
         android:height="48dp"
         android:textColor="@android:color/white"

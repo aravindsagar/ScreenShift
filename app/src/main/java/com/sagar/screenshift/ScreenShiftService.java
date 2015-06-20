@@ -76,8 +76,9 @@ public class ScreenShiftService extends Service {
         intent.setAction(ACTION_TOGGLE);
         intent.putExtra(EXTRA_SEND_BROADCAST, true);
         PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        return notificationBuilder.setContentTitle("Screen shift").
+        return notificationBuilder.setContentTitle(getString(R.string.app_name)).
                 setSmallIcon(R.mipmap.ic_launcher).setContentText(text).setPriority(NotificationCompat.PRIORITY_MIN).
+                /*addAction()*/
                 setContentIntent(pi).build();
     }
 
@@ -102,7 +103,7 @@ public class ScreenShiftService extends Service {
                 saveWidthHeight();
             } else if(ACTION_SET_NOTIFICATION.equals(action)) {
                 if(intent.getBooleanExtra(EXTRA_SET_NOTIFICATION, true)) {
-                    postNotification("Touch to toggle", true);
+                    postNotification(getString(R.string.touch_to_toggle), true);
                 } else {
                     postNotification("", false);
                 }
@@ -178,11 +179,11 @@ public class ScreenShiftService extends Service {
             protected void onPostExecute(Boolean result) {
                 super.onPostExecute(result);
                 if(mPostNotification) {
-                    postNotification("Display in custom mode");
+                    postNotification(getString(R.string.custom_display));
                 }
                 if(!result){
                     Toast.makeText(ScreenShiftService.this,
-                            "Couldn't acquire root permissions", Toast.LENGTH_SHORT).show();
+                            R.string.no_root_string, Toast.LENGTH_SHORT).show();
                     stop(true, true);
                 }
                 if(mSendBroadcast){
@@ -218,7 +219,7 @@ public class ScreenShiftService extends Service {
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 if(mPostNotification) {
-                    postNotification("Display in default mode");
+                    postNotification(getString(R.string.default_display));
                 }
                 if(mSendBroadcast){
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)

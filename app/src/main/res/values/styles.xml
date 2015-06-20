@@ -26,4 +26,11 @@
         <item name="android:textColor">@android:color/white</item>
     </style>
 
+    <style name="CardHeaderStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <!--<item name="android:background">#D1C4E9</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>-->
+    </style>
 </resources>

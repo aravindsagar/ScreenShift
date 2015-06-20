@@ -151,7 +151,7 @@ public class ProductTourActivity extends AppCompatActivity {
 
     private void endTutorial(){
         PreferencesHelper.setPreference(this, PreferencesHelper.KEY_TUTORIAL_DONE, true);
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
         finish();
         overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out);
     }
@@ -238,7 +238,7 @@ public class ProductTourActivity extends AppCompatActivity {
                 }
 
                 if (text_head != null) {
-                    ViewHelper.setTranslationX(text_head,pageWidth * position);
+                    ViewHelper.setTranslationX(text_head,pageWidth/1.8f * position);
                     ViewHelper.setAlpha(text_head,1.0f - Math.abs(position));
                 }
 

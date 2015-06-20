@@ -30,7 +30,7 @@
             android:layout_height="48dp"
             android:gravity="center"
             android:layout_alignParentLeft="true"
-            android:text="SKIP"
+            android:text="@string/string_skip"
             android:textSize="18sp"
             android:textColor="@color/abc_primary_text_material_dark"
             android:background="@drawable/custom_bg"/>
@@ -50,7 +50,7 @@
             android:layout_height="48dp"
             android:gravity="center"
             android:layout_alignParentRight="true"
-            android:text="DONE"
+            android:text="@string/string_done"
             android:textSize="18sp"
             android:textColor="@color/abc_primary_text_material_dark"
             android:background="@drawable/custom_bg"

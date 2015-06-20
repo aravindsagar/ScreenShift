@@ -30,14 +30,14 @@
                     android:id="@+id/button_load_profile"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:text="Load profile"
+                    android:text="@string/load_profile"
                     android:layout_height="wrap_content"
                     style="@style/ButtonBarButton"/>
                 <Button
                     android:id="@+id/button_save_profile"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:text="Save profile"
+                    android:text="@string/save_profile"
                     style="@style/ButtonBarButton"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
@@ -58,7 +58,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:text="@string/heading_resolution"
-                        android:textSize="20sp"
+                        style="@style/CardHeaderStyle"
                         android:layout_alignParentTop="true"
                         android:padding="@dimen/activity_vertical_margin"/>
                     <LinearLayout
@@ -72,9 +72,8 @@
                         <EditText
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:hint="Width"
+                            android:hint="@string/width"
                             android:layout_weight="1"
-                            android:textAlignment="center"
                             android:inputType="number"
                             android:id="@+id/edit_text_width"/>
                         <TextView
@@ -86,9 +85,8 @@
                         <EditText
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:hint="Height"
+                            android:hint="@string/height"
                             android:layout_weight="1"
-                            android:textAlignment="center"
                             android:inputType="number"
                             android:id="@+id/edit_text_height" />
                     </LinearLayout>
@@ -111,7 +109,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:text="@string/heading_overscan"
-                        android:textSize="20sp"
+                        style="@style/CardHeaderStyle"
                         android:layout_alignParentTop="true"
                         android:padding="@dimen/activity_vertical_margin"/>
                     <LinearLayout
@@ -142,7 +140,6 @@
                             android:layout_marginRight="@dimen/activity_vertical_margin"
                             android:id="@+id/text_overscan_left"
                             android:layout_gravity="center_vertical"
-                            android:textAlignment="center"
                             android:gravity="center_horizontal"/>
                     </LinearLayout>
                     <LinearLayout
@@ -175,7 +172,6 @@
                             android:layout_marginEnd="@dimen/activity_vertical_margin"
                             android:layout_marginRight="@dimen/activity_vertical_margin"
                             android:id="@+id/text_overscan_top"
-                            android:textAlignment="center"
                             android:gravity="center_horizontal"/>
                     </LinearLayout>
                     <LinearLayout
@@ -208,7 +204,6 @@
                             android:layout_marginEnd="@dimen/activity_vertical_margin"
                             android:layout_marginRight="@dimen/activity_vertical_margin"
                             android:id="@+id/text_overscan_right"
-                            android:textAlignment="center"
                             android:gravity="center_horizontal"/>
                     </LinearLayout>
                     <LinearLayout
@@ -242,7 +237,6 @@
                             android:layout_marginEnd="@dimen/activity_vertical_margin"
                             android:layout_marginRight="@dimen/activity_vertical_margin"
                             android:id="@+id/text_overscan_bottom"
-                            android:textAlignment="center"
                             android:gravity="center_horizontal"/>
                     </LinearLayout>
                 </RelativeLayout>
@@ -264,14 +258,14 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:text="@string/heading_density"
-                        android:textSize="20sp"
+                        style="@style/CardHeaderStyle"
                         android:layout_alignParentTop="true"
                         android:padding="@dimen/activity_vertical_margin"/>
                     <EditText
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/switch_density"
-                        android:hint="Density value"
+                        android:hint="@string/density_value_string"
                         android:layout_marginLeft="@dimen/activity_vertical_margin"
                         android:layout_marginRight="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
@@ -295,9 +289,10 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/morecard_margin"
                     android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="@android:color/black"
                     android:id="@+id/button_more_settings"
-                    android:text="More Settings..."/>
+                    android:text="@string/more_settings"/>
             </android.support.v7.widget.CardView>
             <View
                 android:layout_width="@dimen/fab_size"

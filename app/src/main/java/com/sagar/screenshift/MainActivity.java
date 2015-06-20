@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //TODO better list of saved profiles on next commit
         super.onCreate(savedInstanceState);
         if(!PreferencesHelper.getBoolPreference(this, KEY_TUTORIAL_DONE)) {
             startActivity(new Intent(this, ProductTourActivity.class));
@@ -144,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         if(actionBar != null) {
             actionBar.setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
         }
-        toolbar.setTitle("Screen Shift");
+        toolbar.setTitle(R.string.app_name);
         toolbar.setTitleTextColor(Color.WHITE);
         masterSwitch = new SwitchCompat(this);
         masterSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -560,7 +559,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                             .translationY(translationY)
                             .scaleX(ddsize / doneFab.getWidth()).scaleY(ddsize / doneFab.getHeight());
                 } else {
-                    Toast.makeText(MainActivity.this, "Settings saved", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.settings_saved_string, Toast.LENGTH_SHORT).show();
                 }
                 Runnable r = new Runnable() {
                     @Override
@@ -598,7 +597,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private boolean validateAndSaveData(){
         if(!TextUtils.isDigitsOnly(widthText.getText()) || !TextUtils.isDigitsOnly(heightText.getText()) || !TextUtils.isDigitsOnly(densityText.getText())){
-            Toast.makeText(this, "Please enter valid inputs", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.enter_valid_input, Toast.LENGTH_SHORT).show();
             return false;
         }
         int width, height, density, leftOverscan, rightOverscan, topOverscan, bottomOverscan;
@@ -610,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             else height = displaySize.height;
         } catch (NumberFormatException e) {
             resolutionCard.setCardBackgroundColor(getResources().getColor(R.color.color_error_background));
-            Toast.makeText(this, "Enter valid resolution values", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.enter_valid_resolution, Toast.LENGTH_SHORT).show();
             return false;
         }
         try {
@@ -618,14 +617,14 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             else density = 0;
         } catch (NumberFormatException e) {
             densityCard.setCardBackgroundColor(getResources().getColor(R.color.color_error_background));
-            Toast.makeText(this, "Enter valid density value", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.enter_valid_density, Toast.LENGTH_SHORT).show();
             return false;
         }
         if(!overrideWarning && (width < displaySize.width/2 || width > displaySize.width * 2
                 || height < displaySize.height/2 || height > displaySize.height * 2)){
             resolutionCard.setCardBackgroundColor(getResources().getColor(R.color.color_warning_background));
             Bundle bundle = new Bundle();
-            bundle.putString(DialogFragments.KEY_WARNING_STRING, "Resolution might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.");
+            bundle.putString(DialogFragments.KEY_WARNING_STRING, getString(R.string.resolution_warning_string));
             DialogFragment fragment = new DialogFragments.DisplaySettingsWarningDialog();
             fragment.setArguments(bundle);
             fragment.show(getSupportFragmentManager(), "resolutionWarningDialog");
@@ -638,7 +637,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         if(!overrideWarning && overscanSwitch.isChecked() && (leftOverscan+rightOverscan > 50 || topOverscan+bottomOverscan > 50)){
             overscanCard.setCardBackgroundColor(getResources().getColor(R.color.color_warning_background));
             Bundle bundle = new Bundle();
-            bundle.putString(DialogFragments.KEY_WARNING_STRING, "Overscan might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.");
+            bundle.putString(DialogFragments.KEY_WARNING_STRING, getString(R.string.overscan_warning_string));
             DialogFragment fragment = new DialogFragments.DisplaySettingsWarningDialog();
             fragment.setArguments(bundle);
             fragment.show(getSupportFragmentManager(), "overscanWarningDialog");
@@ -835,7 +834,8 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         } else if(id == R.id.action_share) {
             Intent sendIntent = new Intent();
             sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_TEXT, "Screen Shift: Customize yur display. More details at http://aravindsagar.github.io/ScreenShift/");
+            sendIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_string) +
+                    " http://aravindsagar.github.io/ScreenShift/");
             sendIntent.setType("text/plain");
             startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_to)));
         }

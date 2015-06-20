@@ -55,15 +55,15 @@ public class DialogFragments {
             params.leftMargin = params.rightMargin = params.topMargin = getResources().getDimensionPixelSize(R.dimen.activity_vertical_margin);
             FrameLayout layout = new FrameLayout(getActivity());
             layout.addView(profileNameText, params);
-            return new AlertDialog.Builder(getActivity()).setTitle("Enter profile name")
+            return new AlertDialog.Builder(getActivity()).setTitle(R.string.enter_profile_name)
                     .setView(layout)
-                    .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             ((DialogListener) getActivity()).onPositiveButton(SaveProfileDialog.this, profileNameText.getText().toString());
                         }
                     })
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(R.string.cancel, null)
                     .create();
         }
     }
@@ -74,14 +74,14 @@ public class DialogFragments {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             super.onCreateDialog(savedInstanceState);
             final AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                    .setMessage("Do you want to keep the current display settings?")
-                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    .setMessage(R.string.keep_settings_question)
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             ((DialogListener) getActivity()).onNegativeButton(KeepSettingsDialog.this);
                         }
                     })
-                    .setPositiveButton("Yes", null)
+                    .setPositiveButton(R.string.yes, null)
                     .setCancelable(false)
                     .create();
             dialog.setCancelable(false);
@@ -112,13 +112,13 @@ public class DialogFragments {
             super.onCreateDialog(savedInstanceState);
             return new AlertDialog.Builder(getActivity())
                     .setMessage(getArguments().getString(KEY_WARNING_STRING))
-                    .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.continue_string, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             ((DialogListener) getActivity()).onPositiveButton(DisplaySettingsWarningDialog.this, null);
                         }
                     })
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(R.string.cancel_string, null)
                     .create();
         }
     }
