@@ -1,0 +1,59 @@
+﻿<resources>
+    <string name="app_name">Screen Shift</string>
+
+    <string name="hello_world">Hallo Welt!</string>
+    <string name="stub_message">Platzhalter. Optionen und Einstellungen werden hier zu finden sein.</string>
+    <string name="heading_resolution">Auflösung</string>
+    <string name="heading_overscan">Overscan %</string>
+    <string name="heading_density">Pixeldichte</string>
+    <string name="title_activity_options">Optionen</string>
+    <string name="key_set_on_boot">Bei Systemstart setzen</string>
+    <string name="key_show_notification">Zeige Benachrichtigung</string>
+    <string name="key_display_mode_in_call">Anruferliste</string>
+    <string name="title_activity_general_settings">Mehr Einstellungen</string>
+    <string name="title_activity_product_tour">Produkt Tour</string>
+
+    <string name="welcom_head_01">Passen sie ihren Bildschirm an</string>
+    <string name="welcom_content_01">Passen sie ihre Bildschirmauflösung, Pixeldichte und Overscan an.</string>
+    <string name="welcom_head_02">Verbessern sie das Spielen und das Testen von Apps</string>
+    <string name="welcom_content_02">Benutzen sie nur ein Gerät um Apps in verschiedenen Auflösungen zu testen. Spielen sie Spiele mit einer niedrigeren Auflösung, um die Performance zu verbessern.</string>
+    <string name="welcom_head_03">Falls irgendetwas scheif geht</string>
+    <string name="welcom_content_03">Wenn sie die ursprünglichen Einstellungen nicht wiederherstellen können, starten sie ihr Gerät neu, warten sie für 2 Minuten, und starten sie erneut neu.
+        Falls dies fehlschlägt, geben sie folgende Befehle via ADB ein: am display-size reset &amp;&amp; am display-density reset</string>
+    <string name="title_activity_about">Über</string>
+
+    <string name="action_about">Über</string>
+    <string name="action_view_intro">Zeige Einführung</string>
+    <string name="about_head_01">Screen Shift</string>
+    <string name="about_content_01">By Aravind Sagar</string>
+    <string name="action_share">App teilen</string>
+    <string name="send_to">Verbreiten sie die Liebe!</string>
+    <string name="visit_website">Website besuchen</string>
+    <string name="load_profile">Profil laden</string>
+    <string name="save_profile">Profil speichern</string>
+    <string name="width">Breite</string>
+    <string name="height">Höhe</string>
+    <string name="more_settings">Mehr Einstellungen…</string>
+    <string name="density_value_string">Pixeldichte</string>
+    <string name="string_skip">Überspringen</string>
+    <string name="string_done">Fertig</string>
+    <string name="enter_profile_name">Profilname bearbeiten</string>
+    <string name="save">Speichern</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="keep_settings_question">Wollen sie die aktuellen Bildschrimeinstellungen beibehalten?</string>
+    <string name="no">Nein</string>
+    <string name="yes">Ja</string>
+    <string name="continue_string">Weiter</string>
+    <string name="cancel_string">Abbrechen</string>
+    <string name="settings_saved_string">Einstellungen Gespeichert</string>
+    <string name="enter_valid_input">Bitte geben sie gültige Werte ein</string>
+    <string name="enter_valid_resolution">Bitte geben sie einen gültigen Wert für die Auflösung ein</string>
+    <string name="enter_valid_density">Bitte geben sie einen gültigen Wert für die Pixeldichte ein</string>
+    <string name="resolution_warning_string">Die Auflösung macht den Bildschirm möglicherweise unbenutzbar. Sind sie sicher, dass sie fortfahren wollen? Warten sie 15 Sekunden falls der Bildschirm unbenutzbar sein sollte.</string>
+    <string name="overscan_warning_string">Overscan macht den Bildschirm möglicherweise unbenutzbar. Sind sie sicher, dass sie fortfahren wollen? Warten sie 15 Sekunden falls der Bildschirm unbenutzbar sein sollte.</string>
+    <string name="share_string">Screen Shift: Passen sie ihren Bildschirm an. Mehr Details unter</string>
+    <string name="touch_to_toggle">Berühren um umzuschalten</string>
+    <string name="custom_display">Bildschirm in angepasstem Modus</string>
+    <string name="no_root_string">Root-Berechtigungen konnten nicht erlangt werden</string>
+    <string name="default_display">Bildschrirm in normalem Modus</string>
+</resources>

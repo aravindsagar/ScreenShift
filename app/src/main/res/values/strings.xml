@@ -33,7 +33,7 @@
     <string name="save_profile">Save profile</string>
     <string name="width">Width</string>
     <string name="height">Height</string>
-    <string name="more_settings">More Settings...</string>
+    <string name="more_settings">More Settings…</string>
     <string name="density_value_string">Density value</string>
     <string name="string_skip">SKIP</string>
     <string name="string_done">DONE</string>
@@ -51,9 +51,14 @@
     <string name="enter_valid_density">Enter valid density value</string>
     <string name="resolution_warning_string">Resolution might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.</string>
     <string name="overscan_warning_string">Overscan might make the display unusable. Are you sure you want to continue? Wait for 15 seconds if display is unusable.</string>
-    <string name="share_string">Screen Shift: Customize yur display. More details at</string>
+    <string name="share_string">Screen Shift: Customize your display. More details at</string>
     <string name="touch_to_toggle">Touch to toggle</string>
     <string name="custom_display">Display in custom mode</string>
     <string name="no_root_string">Couldn\'t acquire root permissions</string>
     <string name="default_display">Display in default mode</string>
+    <string name="density_reboot_test_title">Please note</string>
+    <string name="density_reboot_test_message">Changing density can trigger reboot in certain devices. Click OK to test this behavior. If your device rebooted when you clicked Ok, or you do not want to test it now, click Cancel. You can reset this in Settings.</string>
+    <string name="density_no_reboot_toast">Changing density does not trigger reboot. Yaay!</string>
+    <string name="trigger_reboot_warning_message">This could trigger a reboot. Do you want to continue?</string>
+    <string name="warning">Warning</string>
 </resources>

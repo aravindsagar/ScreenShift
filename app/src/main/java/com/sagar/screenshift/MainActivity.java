@@ -1,9 +1,11 @@
 package com.sagar.screenshift;
 
 import android.animation.Animator;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -39,7 +41,9 @@ import android.widget.Toast;
 
 import com.sagar.screenshift.profileDb.ProfileDbContract.ProfileEntry;
 
+import static android.widget.Toast.LENGTH_SHORT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_ENABLED;
+import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_REBOOT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_VALUE;
 import static com.sagar.screenshift.PreferencesHelper.KEY_MASTER_SWITCH_ON;
 import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
@@ -51,6 +55,9 @@ import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_ENABLED;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
 import static com.sagar.screenshift.PreferencesHelper.KEY_TUTORIAL_DONE;
+import static com.sagar.screenshift.ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH;
+import static com.sagar.screenshift.ScreenShiftService.ACTION_START;
+import static com.sagar.screenshift.ScreenShiftService.EXTRA_OVERRIDE_DENSITY_REBOOT;
 
 
 public class MainActivity extends AppCompatActivity implements DialogFragments.DialogListener {
@@ -75,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
     boolean resolutionEnabledChanged, densityEnabledChanged, overscanEnabledChanged, widthChanged,
             heightChanged, leftOverscanChanged, rightOverscanChanged, topOverscanChanged,
             bottomOverscanChanged, densityChanged;
-    boolean overrideWarning = false, showTimeout = true;
+    boolean overrideWarning = false, showTimeout = true, overrideDensityReboot = false;
+    boolean switchListenerEnabled;
     Profile[] profiles;
 
     @Override
@@ -86,17 +94,17 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             finish();
             overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out);
         }
-        startService(new Intent(this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH));
+        startService(new Intent(this, ScreenShiftService.class).setAction(ACTION_SAVE_HEIGHT_WIDTH));
         setContentView(R.layout.activity_main);
         init(savedInstanceState);
         setUpToolbar();
-
     }
 
     private void init(Bundle savedInstanceState) {
         readSavedData();
         setupFAB(savedInstanceState);
         setUpCards(savedInstanceState);
+        enableAllCards();
         setUpProfileButtons();
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             Log.w("Screen Shift", "Overscan not available in this api level");
@@ -109,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(ScreenShiftService.ACTION_START);
+        IntentFilter filter = new IntentFilter(ACTION_START);
         filter.addAction(ScreenShiftService.ACTION_STOP);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, filter);
     }
@@ -124,7 +132,8 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                 public void run() {
                     try {
                         Log.d("confirmRunnable", "Running");
-                        new DialogFragments.KeepSettingsDialog().show(getSupportFragmentManager(), "keepSettingsDialog");
+                        new DialogFragments.KeepSettingsDialog().show(getSupportFragmentManager(),
+                                "keepSettingsDialog");
                         onPostResumeRunDialog = false;
                     } catch (IllegalStateException e) {
                         e.printStackTrace();
@@ -177,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private void setUpCards(Bundle savedInstanceState){
         cardsLayout = findViewById(R.id.layout_cards);
+        switchListenerEnabled = true;
         setupResolutionCard();
         setupOverscanCard();
         setupDensityCard();
@@ -204,10 +214,10 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             @Override
             public void onClick(View view) {
                 Cursor cursor = getContentResolver().query(ProfileEntry.CONTENT_URI, null, null, null, null);
-                if(cursor.moveToFirst()) {
+                if (cursor.moveToFirst()) {
                     profiles = new Profile[cursor.getCount()];
                     String[] itemStrings = new String[cursor.getCount()];
-                    for(int i=0; !cursor.isAfterLast(); cursor.moveToNext(), i++){
+                    for (int i = 0; !cursor.isAfterLast(); cursor.moveToNext(), i++) {
                         Profile profile = new Profile();
                         profile.isResolutionEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_ENABLED)) == 1;
                         profile.isDensityEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_DENSITY_ENABLED)) == 1;
@@ -250,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         resolutionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(!switchListenerEnabled) return;
                 resolutionEnabledChanged = (b != savedResolutionEnabled);
                 setFabVisibilityIfRequired();
                 setResolutionCardInnerEnabled(b);
@@ -307,6 +318,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         overscanSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(!switchListenerEnabled) return;
                 overscanEnabledChanged = (b != savedOverscanEnabled);
                 setFabVisibilityIfRequired();
                 setOverscanCardInnerEnabled(b);
@@ -380,19 +392,50 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         densitySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(!switchListenerEnabled) return;
                 densityEnabledChanged = (b != savedDensityEnabled);
-                setFabVisibilityIfRequired();
-                setDensityCardInnerEnabled(b);
+                final boolean checked = b;
+                if(densityEnabledChanged &&
+                        PreferencesHelper.getBoolPreference(MainActivity.this, KEY_DENSITY_REBOOT)) {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setMessage(R.string.trigger_reboot_warning_message)
+                            .setTitle(R.string.warning)
+                            .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    densitySwitch.setChecked(!checked);
+                                    overrideDensityReboot = false;
+                                }
+                            })
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    setFabVisibilityIfRequired();
+                                    setDensityCardInnerEnabled(checked);
+                                    overrideDensityReboot = true;
+                                }
+                            })
+                            .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    densitySwitch.setChecked(!checked);
+                                    overrideDensityReboot = false;
+                                }
+                            })
+                            .show();
+                } else {
+                    setFabVisibilityIfRequired();
+                    setDensityCardInnerEnabled(checked);
+                    overrideDensityReboot = false;
+                }
             }
         });
         densityText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
             public void afterTextChanged(Editable editable) {
@@ -466,6 +509,8 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         resolutionEnabledChanged = densityEnabledChanged = overscanEnabledChanged = widthChanged =
                 heightChanged = leftOverscanChanged = rightOverscanChanged = topOverscanChanged =
                 bottomOverscanChanged = densityChanged = false;
+
+        overrideDensityReboot = false;
     }
 
     private void populateDensityCard() {
@@ -549,7 +594,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                 float ddsize = getDiagonalDisplaySize();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
 //                    Log.d("MainActivity", getDisplayWidth() + "x" + getDisplayHeight());
-                    float fabTop = getDisplayHeight() - getResources().getDimension(R.dimen.fab_size) - 2*getResources().getDimension(R.dimen.activity_vertical_margin);
+                    float fabTop = getDisplayHeight() - getResources().getDimension(R.dimen.fab_size) - 2 * getResources().getDimension(R.dimen.activity_vertical_margin);
                     float translationX = getDisplayWidth() / 2 - doneFab.getLeft() - doneFab.getWidth() / 2,
                             translationY = -fabTop + getDisplayHeight() / 2 - doneFab.getHeight() / 2;
                     Log.d("MainActivity", translationX + "x" + translationY);
@@ -559,12 +604,12 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                             .translationY(translationY)
                             .scaleX(ddsize / doneFab.getWidth()).scaleY(ddsize / doneFab.getHeight());
                 } else {
-                    Toast.makeText(MainActivity.this, R.string.settings_saved_string, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.settings_saved_string, LENGTH_SHORT).show();
                 }
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        if(PreferencesHelper.getBoolPreference(MainActivity.this, KEY_MASTER_SWITCH_ON)) {
+                        if (PreferencesHelper.getBoolPreference(MainActivity.this, KEY_MASTER_SWITCH_ON)) {
                             enableService();
                         }
                         init(null);
@@ -597,7 +642,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private boolean validateAndSaveData(){
         if(!TextUtils.isDigitsOnly(widthText.getText()) || !TextUtils.isDigitsOnly(heightText.getText()) || !TextUtils.isDigitsOnly(densityText.getText())){
-            Toast.makeText(this, R.string.enter_valid_input, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.enter_valid_input, LENGTH_SHORT).show();
             return false;
         }
         int width, height, density, leftOverscan, rightOverscan, topOverscan, bottomOverscan;
@@ -609,7 +654,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             else height = displaySize.height;
         } catch (NumberFormatException e) {
             resolutionCard.setCardBackgroundColor(getResources().getColor(R.color.color_error_background));
-            Toast.makeText(this, R.string.enter_valid_resolution, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.enter_valid_resolution, LENGTH_SHORT).show();
             return false;
         }
         try {
@@ -617,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             else density = 0;
         } catch (NumberFormatException e) {
             densityCard.setCardBackgroundColor(getResources().getColor(R.color.color_error_background));
-            Toast.makeText(this, R.string.enter_valid_density, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.enter_valid_density, LENGTH_SHORT).show();
             return false;
         }
         if(!overrideWarning && (width < displaySize.width/2 || width > displaySize.width * 2
@@ -666,9 +711,10 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         return true;
     }
 
-    private void enableService(){
-        PreferencesHelper.setPreference(this, KEY_MASTER_SWITCH_ON, true);
-        startService(new Intent(MainActivity.this, ScreenShiftService.class).setAction(ScreenShiftService.ACTION_START));
+    private void enableService() {
+        PreferencesHelper.setPreference(MainActivity.this, KEY_MASTER_SWITCH_ON, true);
+        startService(new Intent(MainActivity.this, ScreenShiftService.class).setAction(ACTION_START)
+                .putExtra(EXTRA_OVERRIDE_DENSITY_REBOOT, overrideDensityReboot));
         if(!showTimeout) return;
 
         final Runnable confirmRunnable = new Runnable(){
@@ -729,7 +775,9 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
 
     private void setSwitchCheckedAndCallListener(SwitchCompat switchView, boolean isChecked) {
         if(switchView.isChecked() == isChecked) {
+            switchListenerEnabled = false;
             switchView.setChecked(!isChecked);
+            switchListenerEnabled = true;
         }
         switchView.setChecked(isChecked);
     }
@@ -847,7 +895,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("BroadcastReceiver", "Broadcast received");
-            if(ScreenShiftService.ACTION_START.equals(intent.getAction())) {
+            if(ACTION_START.equals(intent.getAction())) {
                 masterSwitch.setChecked(true);
             } else if(ScreenShiftService.ACTION_STOP.equals(intent.getAction())) {
                 masterSwitch.setChecked(false);

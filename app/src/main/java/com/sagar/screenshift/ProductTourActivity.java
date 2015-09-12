@@ -108,6 +108,10 @@ public class ProductTourActivity extends AppCompatActivity {
         });
 
         buildCircles();
+
+        if(!PreferencesHelper.getBoolPreference(this, PreferencesHelper.KEY_TUTORIAL_DONE)) {
+            PreferencesHelper.testDensityRebootDialog(this);
+        }
     }
 
     @Override

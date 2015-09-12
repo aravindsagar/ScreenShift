@@ -23,9 +23,11 @@ import java.util.List;
 import eu.chainfire.libsuperuser.Shell;
 
 import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_ENABLED;
+import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_REBOOT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_VALUE;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DISPLAY_HEIGHT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_DISPLAY_WIDTH;
+import static com.sagar.screenshift.PreferencesHelper.KEY_MASTER_SWITCH_ON;
 import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
 import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_ENABLED;
 import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_LEFT;
@@ -41,44 +43,48 @@ public class ScreenShiftService extends Service {
     public static final String ACTION_TOGGLE = "action_toggle";
     public static final String ACTION_SAVE_HEIGHT_WIDTH = "action_save_height_width";
     public static final String ACTION_SET_NOTIFICATION = "set_notification";
+    public static final String ACTION_RESET_DENSITY = "reset_density";
 
     public static final String EXTRA_SEND_BROADCAST = "send_broadcast";
     public static final String EXTRA_POST_NOTIFICATION = "post_notification";
     public static final String EXTRA_SET_NOTIFICATION = "extra_set_notification";
+    public static final String EXTRA_OVERRIDE_DENSITY_REBOOT = "extra_override_density_reboot";
 
     @Override
     public void onCreate() {
         super.onCreate();
     }
 
-    private void postNotification(String text) {
-        postNotification(text, null);
+    private void postNotification(String text, int icon) {
+        postNotification(text, null, icon);
     }
-    private void postNotification(String text, Boolean override) {
+    private void postNotification(String text, Boolean override, int icon) {
         if(override == null) {
             if (PreferencesHelper.getBoolPreference(this, getString(R.string.key_show_notification), true)) {
-                startForeground(1, buildNotification(text));
+                startForeground(1, buildNotification(text, icon));
             } else {
                 stopForeground(true);
             }
         } else {
             if(override) {
-                startForeground(1, buildNotification(text));
+                startForeground(1, buildNotification(text, icon));
             } else {
                 stopForeground(true);
             }
         }
     }
 
-    private Notification buildNotification(String text){
+    private Notification buildNotification(String text, int icon){
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
         Intent intent = new Intent(this, ScreenShiftService.class);
         intent.setAction(ACTION_TOGGLE);
         intent.putExtra(EXTRA_SEND_BROADCAST, true);
-        PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pi = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT),
+                settingsPi = PendingIntent.getActivity(this, 3, new Intent(this, MainActivity.class).
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), PendingIntent.FLAG_UPDATE_CURRENT);
         return notificationBuilder.setContentTitle(getString(R.string.app_name)).
-                setSmallIcon(R.mipmap.ic_launcher).setContentText(text).setPriority(NotificationCompat.PRIORITY_MIN).
-                /*addAction()*/
+                setSmallIcon(icon).setContentText(text).setPriority(NotificationCompat.PRIORITY_MIN).
+                addAction(R.drawable.ic_stat_settings_notification, getString(R.string.title_activity_settings), settingsPi).
                 setContentIntent(pi).build();
     }
 
@@ -93,34 +99,42 @@ public class ScreenShiftService extends Service {
             String action = intent.getAction();
             boolean sendBroadcast = intent.getBooleanExtra(EXTRA_SEND_BROADCAST, false);
             boolean postNotification = intent.getBooleanExtra(EXTRA_POST_NOTIFICATION, true);
+            boolean overrideDensityReboot = intent.getBooleanExtra(EXTRA_OVERRIDE_DENSITY_REBOOT, false);
             if(ACTION_START.equals(action)) {
-                start(sendBroadcast, postNotification);
+                start(sendBroadcast, postNotification, overrideDensityReboot);
             } else if(ACTION_STOP.equals(action)) {
-                stop(sendBroadcast, postNotification);
+                stop(sendBroadcast, postNotification, overrideDensityReboot);
             } else if(ACTION_TOGGLE.equals(action)) {
-                toggle(sendBroadcast, postNotification);
+                toggle(sendBroadcast, postNotification, overrideDensityReboot);
             } else if(ACTION_SAVE_HEIGHT_WIDTH.equals(action)) {
                 saveWidthHeight();
             } else if(ACTION_SET_NOTIFICATION.equals(action)) {
                 if(intent.getBooleanExtra(EXTRA_SET_NOTIFICATION, true)) {
-                    postNotification(getString(R.string.touch_to_toggle), true);
+                    if(PreferencesHelper.getBoolPreference(this, KEY_MASTER_SWITCH_ON)) {
+                        postNotification(getString(R.string.custom_display), R.drawable.ic_stat_service_running);
+                    } else {
+                        postNotification(getString(R.string.default_display), R.drawable.ic_stat_service_paused);
+                    }
                 } else {
-                    postNotification("", false);
+                    postNotification("", false, 0);
                 }
+            } else if(ACTION_RESET_DENSITY.equals(action)) {
+                Log.i("ScreenShiftService", "Resetting density");
+                run(getDensityCommand(-1));
             }
         }
         return START_STICKY;
     }
 
-    private void toggle(boolean sendBroadcast, boolean postNotification) {
+    private void toggle(boolean sendBroadcast, boolean postNotification, boolean overrideDensityReboot) {
         if(PreferencesHelper.getBoolPreference(this, PreferencesHelper.KEY_MASTER_SWITCH_ON)) {
-            stop(sendBroadcast, postNotification);
+            stop(sendBroadcast, postNotification, overrideDensityReboot);
         } else {
-            start(sendBroadcast, postNotification);
+            start(sendBroadcast, postNotification, overrideDensityReboot);
         }
     }
 
-    private void start(boolean sendBroadcast, boolean postNotification){
+    private void start(boolean sendBroadcast, boolean postNotification, final boolean overrideDensityReboot){
         new AsyncTask<Boolean, Void, Boolean>() {
             private boolean mSendBroadcast, mPostNotification;
             @Override
@@ -135,8 +149,9 @@ public class ScreenShiftService extends Service {
                 if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_RESOLUTION_ENABLED)) {
                     height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_RESOLUTION_HEIGHT, -1);
                     width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_RESOLUTION_WIDTH, -1);
-                    if(height == -1) height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, 1280);
-                    if(width == -1) width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, 768);
+                    if(height == -1) height = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, -1);
+                    if(width == -1) width = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, -1);
+                    if(height == -1 || width == -1) return false;
                     commands.add(getResolutionCommand(width, height));
                 } else {
                     commands.add(getResolutionCommand(-1, -1));
@@ -151,24 +166,25 @@ public class ScreenShiftService extends Service {
                 } else {
                     commands.add("wm overscan reset");
                 }
-                if(PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_DENSITY_ENABLED)) {
-                    int density = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DENSITY_VALUE, -1);
-                    if(density != -1) {
-                        commands.add(getDensityCommand(density));
+                if(!PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_DENSITY_REBOOT, true)
+                        || overrideDensityReboot) {
+                    if (PreferencesHelper.getBoolPreference(ScreenShiftService.this, KEY_DENSITY_ENABLED)) {
+                        int density = PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DENSITY_VALUE, -1);
+                        if (density != -1) {
+                            commands.add(getDensityCommand(density));
+                        }
+                    } else {
+                        commands.add(getDensityCommand(-1));
                     }
-                } else {
-                    commands.add(getDensityCommand(-1));
                 }
                 PreferencesHelper.setPreference(ScreenShiftService.this,
                         PreferencesHelper.KEY_MASTER_SWITCH_ON, true);
                 List<String> results;
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    results = Shell.SU.run(commands);
-                } else {
-                    results =Shell.SH.run(commands);
-                }
-                for (String result : results){
-                    Log.i("ScreenShiftService", result);
+                results = run(commands);
+                if(results != null) {
+                    for (String result : results) {
+                        Log.i("ScreenShiftService", result);
+                    }
                 }
                 mSendBroadcast = booleans[0];
                 mPostNotification = booleans[1];
@@ -179,12 +195,13 @@ public class ScreenShiftService extends Service {
             protected void onPostExecute(Boolean result) {
                 super.onPostExecute(result);
                 if(mPostNotification) {
-                    postNotification(getString(R.string.custom_display));
+                    postNotification(getString(R.string.custom_display), R.drawable.ic_stat_service_running);
                 }
                 if(!result){
                     Toast.makeText(ScreenShiftService.this,
                             R.string.no_root_string, Toast.LENGTH_SHORT).show();
                     stop(true, true);
+                    return;
                 }
                 if(mSendBroadcast){
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
@@ -194,7 +211,11 @@ public class ScreenShiftService extends Service {
         }.execute(sendBroadcast, postNotification);
     }
 
-    private void stop(boolean sendBroadcast, boolean postNotification){
+    private void stop(boolean sendBroadcast, boolean postNotification) {
+        stop(sendBroadcast, postNotification, false);
+    }
+
+    private void stop(boolean sendBroadcast, boolean postNotification, final boolean overrideDensityReboot){
         new AsyncTask<Boolean, Void, Void>() {
             private boolean mSendBroadcast, mPostNotification;
             @Override
@@ -202,13 +223,11 @@ public class ScreenShiftService extends Service {
                 PreferencesHelper.setPreference(ScreenShiftService.this,
                         PreferencesHelper.KEY_MASTER_SWITCH_ON, false);
                 List<String> results;
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    results = Shell.SU.run(getResetCommands());
-                } else {
-                    results = Shell.SH.run(getResetCommands());
-                }
-                for (String result : results){
-                    Log.i("ScreenShiftService", result);
+                results = run(getResetCommands(overrideDensityReboot));
+                if(results != null) {
+                    for (String result : results) {
+                        Log.i("ScreenShiftService", result);
+                    }
                 }
                 mSendBroadcast = booleans[0];
                 mPostNotification = booleans[1];
@@ -219,7 +238,7 @@ public class ScreenShiftService extends Service {
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 if(mPostNotification) {
-                    postNotification(getString(R.string.default_display));
+                    postNotification(getString(R.string.default_display), R.drawable.ic_stat_service_paused);
                 }
                 if(mSendBroadcast){
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
@@ -236,7 +255,11 @@ public class ScreenShiftService extends Service {
                 if(PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_HEIGHT, -1) == -1
                         || PreferencesHelper.getIntPreference(ScreenShiftService.this, KEY_DISPLAY_WIDTH, -1) == -1) {
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        Shell.SU.run(getResetCommands());
+                        if(!Shell.SU.available()) {
+                            return null;
+                        } else {
+                            Shell.SU.run(getResetCommands());
+                        }
                     } else {
                         Shell.SH.run(getResetCommands());
                     }
@@ -249,15 +272,42 @@ public class ScreenShiftService extends Service {
         }.execute();
     }
 
+    /**
+     * Runs in SH shell for API < JELLY_BEAN_MR2, in SU otherwise.
+     * @param commands Commands to be run in shell
+     * @return output of executing the commands
+     */
+    private List<String> run(List<String> commands) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            return Shell.SU.run(commands);
+        } else {
+            return Shell.SH.run(commands);
+        }
+    }
+
+    private List<String> run(String command) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            return Shell.SU.run(command);
+        } else {
+            return Shell.SH.run(command);
+        }
+    }
+
     List<String> getResetCommands() {
+        return getResetCommands(false);
+    }
+
+    List<String> getResetCommands(boolean overrideDensityReboot) {
         List<String> commands = new ArrayList<>();
+        boolean resetDensity = !PreferencesHelper.getBoolPreference(this, KEY_DENSITY_REBOOT, true)
+                || overrideDensityReboot;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             commands.add("wm size reset");
-            commands.add("wm density reset");
+            if(resetDensity) commands.add("wm density reset");
             commands.add("wm overscan reset");
         } else {
             commands.add("am display-size reset");
-            commands.add("am display-density reset");
+            if(resetDensity) commands.add("am display-density reset");
         }
         return commands;
     }

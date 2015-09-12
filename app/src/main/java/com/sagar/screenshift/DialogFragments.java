@@ -25,7 +25,7 @@ public class DialogFragments {
         public void onAttach(Activity activity) {
             super.onAttach(activity);
             if(!(activity instanceof DialogListener)){
-                throw new ClassCastException(activity.toString() + " must implement YesNoListener");
+                throw new ClassCastException(activity.toString() + " must implement DialogListener");
             }
         }
     }

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string-array name="pref_in_call_list_titles">
+    <item>Использовать текущие Настройки</item>
+    <item>Всегда по умолчанию режим отображения</item>
+    <item>Всегда настраиваемый режим отображения</item>
+  </string-array>
+  <string-array name="pref_in_call_list_values">
+    <item>0</item>
+    <item>-1</item>
+    <item>1</item>
+  </string-array>
+</resources>
