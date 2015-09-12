@@ -1,2 +1,2 @@
 /build
-/src/java/com/sagar/screenshift/util/InAppBillingPublicKey.java
+/app/src/main/java/com/sagar/screenshift/util/InAppBillingPublicKey.java
