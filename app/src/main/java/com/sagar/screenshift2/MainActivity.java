@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.animation.Animator;
 import android.app.AlertDialog;
@@ -39,26 +39,31 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sagar.screenshift.profileDb.ProfileDbContract.ProfileEntry;
+import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
+import com.sagar.screenshift2.util.IabHelper;
+import com.sagar.screenshift2.util.IabResult;
+import com.sagar.screenshift2.util.InAppBillingPublicKey;
+import com.sagar.screenshift2.util.Inventory;
+import com.sagar.screenshift2.util.Purchase;
 
 import static android.widget.Toast.LENGTH_SHORT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_ENABLED;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_REBOOT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_VALUE;
-import static com.sagar.screenshift.PreferencesHelper.KEY_MASTER_SWITCH_ON;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_ENABLED;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_LEFT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_RIGHT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_TOP;
-import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_ENABLED;
-import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
-import static com.sagar.screenshift.PreferencesHelper.KEY_TUTORIAL_DONE;
-import static com.sagar.screenshift.PreferencesHelper.testDensityReboot;
-import static com.sagar.screenshift.ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH;
-import static com.sagar.screenshift.ScreenShiftService.ACTION_START;
-import static com.sagar.screenshift.ScreenShiftService.EXTRA_OVERRIDE_DENSITY_REBOOT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_REBOOT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_VALUE;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_MASTER_SWITCH_ON;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_LEFT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_RIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_TOP;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_WIDTH;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_TUTORIAL_DONE;
+import static com.sagar.screenshift2.PreferencesHelper.testDensityReboot;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_START;
+import static com.sagar.screenshift2.ScreenShiftService.EXTRA_OVERRIDE_DENSITY_REBOOT;
 
 
 public class MainActivity extends AppCompatActivity implements DialogFragments.DialogListener {
@@ -87,6 +92,12 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
     boolean switchListenerEnabled;
     Profile[] profiles;
 
+    private IabHelper mHelper;
+    boolean mHasDonated = false;
+    static final String SKU_DONATE = "com.sagar.screenshift2.donate"; //"android.test.purchased"; //
+    // (arbitrary) request code for the purchase flow
+    static final int RC_REQUEST = 10001;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         setContentView(R.layout.activity_main);
         init(savedInstanceState);
         setUpToolbar();
+        setUpIAB();
     }
 
     private void init(Bundle savedInstanceState) {
@@ -114,6 +126,64 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             }
         }
     }
+
+    private void setUpIAB() {
+        String base64EncodedPublicKey = InAppBillingPublicKey.getPublicKey();
+
+        // compute your public key and store it in base64EncodedPublicKey
+        mHelper = new IabHelper(this, base64EncodedPublicKey);
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    Log.d("ScreenShift", "Problem setting up In-app Billing: " + result);
+                    return;
+                }
+                // Hooray, IAB is fully set up!
+                // Have we been disposed of in the meantime? If so, quit.
+                if (mHelper == null) return;
+
+                // IAB is fully set up. Now, let's get an inventory of stuff we own.
+                Log.d("ScreenShift", "Setup successful. Querying inventory.");
+                mHelper.queryInventoryAsync(mGotInventoryListener);
+            }
+        });
+    }
+
+    // Listener that's called when we finish querying the items and subscriptions we own
+    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+
+            // Have we been disposed of in the meantime? If so, quit.
+            if (mHelper == null) return;
+
+            // Is it a failure?
+            if (result.isFailure()) {
+                complain("Failed to query inventory: " + result);
+                return;
+            }
+
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+            Purchase donatePurchase = inventory.getPurchase(SKU_DONATE);
+            mHasDonated = (donatePurchase != null);
+            if(mHasDonated) {
+                mHelper.consumeAsync(inventory.getPurchase(SKU_DONATE), mConsumeFinishedListener);
+            }
+        }
+    };
+
+    IabHelper.OnConsumeFinishedListener mConsumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
+        public void onConsumeFinished(Purchase purchase, IabResult result) {
+            if(result.isSuccess()) {
+                Toast.makeText(MainActivity.this, "Thank you for your contribution. :)", LENGTH_SHORT).show();
+            }
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -895,9 +965,53 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                     " http://aravindsagar.github.io/ScreenShift/");
             sendIntent.setType("text/plain");
             startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_to)));
+        } else if(id == R.id.action_donate) {
+            if(mHelper != null) {
+                try {
+                    mHelper.launchPurchaseFlow(MainActivity.this, SKU_DONATE, RC_REQUEST, mPurchaseFinishedListener);
+                } catch (IllegalStateException e) {
+                    complain(getString(R.string.prev_in_progress_try_later));
+                }
+            } else {
+                Toast.makeText(this, "Cannot start in-app purchase.", LENGTH_SHORT).show();
+            }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+            // if we were disposed of in the meantime, quit.
+            if (mHelper == null) return;
+
+            if (result.isFailure()) {
+                complain(getString(R.string.donate_failed_message));
+                return;
+            }
+            if(purchase.getSku().equals(SKU_DONATE)) {
+                mHelper.consumeAsync(purchase, mConsumeFinishedListener);
+            }
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mHelper != null) mHelper.dispose();
+        mHelper = null;
+    }
+    void complain(String message) {
+        Log.e("ScreenShift", "**** TrivialDrive Error: " + message);
+        alert("Error: " + message);
+    }
+
+    void alert(String message) {
+        AlertDialog.Builder bld = new AlertDialog.Builder(this);
+        bld.setMessage(message);
+        bld.setNeutralButton("OK", null);
+        Log.d("ScreenShift", "Showing alert dialog: " + message);
+        bld.create().show();
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver(){

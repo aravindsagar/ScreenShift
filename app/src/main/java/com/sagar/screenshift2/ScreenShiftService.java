@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -22,20 +22,20 @@ import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
 
-import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_ENABLED;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_REBOOT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DENSITY_VALUE;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DISPLAY_HEIGHT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_DISPLAY_WIDTH;
-import static com.sagar.screenshift.PreferencesHelper.KEY_MASTER_SWITCH_ON;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_ENABLED;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_LEFT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_RIGHT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_OVERSCAN_TOP;
-import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_ENABLED;
-import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
-import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_REBOOT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_VALUE;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DISPLAY_HEIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DISPLAY_WIDTH;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_MASTER_SWITCH_ON;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_LEFT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_RIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_TOP;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_WIDTH;
 
 public class ScreenShiftService extends Service {
     public static final String ACTION_START = "action_start";

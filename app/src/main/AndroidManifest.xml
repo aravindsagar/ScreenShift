@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sagar.screenshift" >
+    package="com.sagar.screenshift2" >
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name=".MainActivity"
+            android:name="com.sagar.screenshift2.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyTheme.NoActionBar"
@@ -23,33 +24,33 @@
         </activity>
 
         <service
-            android:name=".ScreenShiftService"
+            android:name="com.sagar.screenshift2.ScreenShiftService"
             android:enabled="true"
             android:exported="false" >
         </service>
 
-        <receiver android:name=".BootCompleteReceiver" >
+        <receiver android:name="com.sagar.screenshift2.BootCompleteReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.sagar.screenshift2.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="com.sagar.screenshift2.MainActivity"
             android:theme="@style/Theme.MyTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.sagar.screenshift.MainActivity" />
+                android:value="com.sagar.screenshift2.MainActivity" />
         </activity>
 
         <provider
-            android:name=".profileDb.ProfileDbProvider"
-            android:authorities="com.sagar.screenshift.app"
+            android:name="com.sagar.screenshift2.profileDb.ProfileDbProvider"
+            android:authorities="com.sagar.screenshift2.app"
             android:exported="false" />
 
-        <receiver android:name=".CallStateReceiver" >
+        <receiver android:name="com.sagar.screenshift2.CallStateReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
                 <action android:name="com.android.deskclock.ALARM_DONE" />
@@ -60,18 +61,18 @@
         </receiver>
 
         <activity
-            android:name=".ProductTourActivity"
+            android:name="com.sagar.screenshift2.ProductTourActivity"
             android:label="@string/title_activity_product_tour"
             android:theme="@style/Theme.MyTheme.NoActionBar" >
         </activity>
         <activity
-            android:name=".AboutActivity"
+            android:name="com.sagar.screenshift2.AboutActivity"
             android:label="@string/title_activity_about"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="com.sagar.screenshift2.MainActivity"
             android:theme="@style/Theme.MyTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.sagar.screenshift.MainActivity" />
+                android:value="com.sagar.screenshift2.MainActivity" />
         </activity>
     </application>
 

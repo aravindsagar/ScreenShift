@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -21,8 +21,8 @@ import android.widget.LinearLayout;
 
 import java.util.List;
 
-import static com.sagar.screenshift.ScreenShiftService.ACTION_SET_NOTIFICATION;
-import static com.sagar.screenshift.ScreenShiftService.EXTRA_SET_NOTIFICATION;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_SET_NOTIFICATION;
+import static com.sagar.screenshift2.ScreenShiftService.EXTRA_SET_NOTIFICATION;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On

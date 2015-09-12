@@ -1,4 +1,4 @@
-package com.sagar.screenshift.profileDb;
+package com.sagar.screenshift2.profileDb;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.util.Log;
 
-import com.sagar.screenshift.profileDb.ProfileDbContract.ProfileEntry;
+import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
 
 /**
  * Created by aravind on 17/6/15.

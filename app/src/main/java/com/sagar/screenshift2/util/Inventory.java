@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.sagar.screenshift.util;
+package com.sagar.screenshift2.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;

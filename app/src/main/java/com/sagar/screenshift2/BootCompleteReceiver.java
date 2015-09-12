@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,11 +7,11 @@ import android.util.Log;
 
 import java.util.Date;
 
-import static com.sagar.screenshift.PreferencesHelper.KEY_LAST_BOOT_TIME;
-import static com.sagar.screenshift.PreferencesHelper.KEY_MASTER_SWITCH_ON;
-import static com.sagar.screenshift.ScreenShiftService.ACTION_START;
-import static com.sagar.screenshift.ScreenShiftService.ACTION_STOP;
-import static com.sagar.screenshift.ScreenShiftService.EXTRA_POST_NOTIFICATION;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_LAST_BOOT_TIME;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_MASTER_SWITCH_ON;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_START;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_STOP;
+import static com.sagar.screenshift2.ScreenShiftService.EXTRA_POST_NOTIFICATION;
 
 /**
  * Created by aravind on 16/6/15.

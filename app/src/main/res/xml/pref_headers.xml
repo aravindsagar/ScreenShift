@@ -2,7 +2,7 @@
 
     <!-- These settings headers are only used on tablets. -->
 
-    <header android:fragment="com.sagar.screenshift.SettingsActivity$GeneralPreferenceFragment"
+    <header android:fragment="com.sagar.screenshift2.SettingsActivity$GeneralPreferenceFragment"
         android:title="@string/pref_header_general" />
 
 </preference-headers>

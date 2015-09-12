@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

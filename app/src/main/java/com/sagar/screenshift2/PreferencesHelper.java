@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,7 +11,7 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import static android.widget.Toast.LENGTH_SHORT;
-import static com.sagar.screenshift.ScreenShiftService.ACTION_RESET_DENSITY;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_RESET_DENSITY;
 
 /**
  * Created by aravind on 12/6/15.

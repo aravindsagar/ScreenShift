@@ -1,4 +1,4 @@
-package com.sagar.screenshift;
+package com.sagar.screenshift2;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

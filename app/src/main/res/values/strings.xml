@@ -62,4 +62,7 @@
     <string name="trigger_reboot_warning_message">This could trigger a reboot. Do you want to continue?</string>
     <string name="warning">Warning</string>
     <string name="density_reboot_test_option">Test reboot on density change</string>
+    <string name="action_donate">Donate</string>
+    <string name="donate_failed_message">Donate failed. Please try again.</string>
+    <string name="prev_in_progress_try_later">Previous purchase is still being processed, please try after a few seconds.</string>
 </resources>

@@ -13,13 +13,10 @@
  * limitations under the License.
  */
 
-package com.sagar.screenshift.util;
+package com.sagar.screenshift2.util;
 
 import android.text.TextUtils;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 import java.security.InvalidKeyException;

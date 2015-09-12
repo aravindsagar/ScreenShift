@@ -1,11 +1,11 @@
-package com.sagar.screenshift.profileDb;
+package com.sagar.screenshift2.profileDb;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.sagar.screenshift.profileDb.ProfileDbContract.ProfileEntry;
+import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
 
 /**
  * Created by aravind on 17/6/15.

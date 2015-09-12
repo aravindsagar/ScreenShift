@@ -1,4 +1,4 @@
-package com.sagar.screenshift.profileDb;
+package com.sagar.screenshift2.profileDb;
 
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
  * Specifies the Contract for Profile db
  */
 public class ProfileDbContract {
-    public static final String CONTENT_AUTHORITY = "com.sagar.screenshift.app";
+    public static final String CONTENT_AUTHORITY = "com.sagar.screenshift2.app";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final String PATH_PROFILES = "profiles";
