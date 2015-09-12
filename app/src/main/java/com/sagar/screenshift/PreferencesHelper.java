@@ -78,7 +78,7 @@ public class PreferencesHelper {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(KEY, defaultValue);
     }
 
-    public static void testDensityRebootDialog(final Activity activity){
+    public static void testDensityReboot(final Activity activity){
         new AlertDialog.Builder(activity).setTitle(R.string.density_reboot_test_title)
                 .setMessage(R.string.density_reboot_test_message)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {

@@ -61,4 +61,5 @@
     <string name="density_no_reboot_toast">Changing density does not trigger reboot. Yaay!</string>
     <string name="trigger_reboot_warning_message">This could trigger a reboot. Do you want to continue?</string>
     <string name="warning">Warning</string>
+    <string name="density_reboot_test_option">Test reboot on density change</string>
 </resources>

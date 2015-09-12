@@ -55,6 +55,7 @@ import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_ENABLED;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
 import static com.sagar.screenshift.PreferencesHelper.KEY_RESOLUTION_WIDTH;
 import static com.sagar.screenshift.PreferencesHelper.KEY_TUTORIAL_DONE;
+import static com.sagar.screenshift.PreferencesHelper.testDensityReboot;
 import static com.sagar.screenshift.ScreenShiftService.ACTION_SAVE_HEIGHT_WIDTH;
 import static com.sagar.screenshift.ScreenShiftService.ACTION_START;
 import static com.sagar.screenshift.ScreenShiftService.EXTRA_OVERRIDE_DENSITY_REBOOT;
@@ -392,10 +393,10 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         densitySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(!switchListenerEnabled) return;
+                if (!switchListenerEnabled) return;
                 densityEnabledChanged = (b != savedDensityEnabled);
                 final boolean checked = b;
-                if(densityEnabledChanged &&
+                if (densityEnabledChanged &&
                         PreferencesHelper.getBoolPreference(MainActivity.this, KEY_DENSITY_REBOOT)) {
                     new AlertDialog.Builder(MainActivity.this)
                             .setMessage(R.string.trigger_reboot_warning_message)
@@ -441,6 +442,14 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             public void afterTextChanged(Editable editable) {
                 densityChanged = !editable.toString().equals(savedDensity);
                 setFabVisibilityIfRequired();
+            }
+        });
+
+        Button testDensityButton = (Button) findViewById(R.id.text_density_reboot);
+        testDensityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                testDensityReboot(MainActivity.this);
             }
         });
     }
