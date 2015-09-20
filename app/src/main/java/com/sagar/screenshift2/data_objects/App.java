@@ -18,6 +18,7 @@ import java.util.List;
 
 /**
  * Created by aravind on 11/11/14.
+ * Class representing an installed app, and related functions.
  */
 public class App {
     private String packageName, appName;
@@ -130,5 +131,17 @@ public class App {
             cursor.close();
         }
         return map;
+    }
+
+    public static Profile getProfileForApp(Context context, String packageName) {
+        Cursor cursor = context.getContentResolver().query(AppProfileEntry.CONTENT_URI, null,
+                AppProfileEntry.COLUMN_PACKAGE_NAME + " = ? ", new String[]{packageName}, null);
+        if(cursor!=null && cursor.moveToFirst()) {
+            int profileId = cursor
+                    .getInt(cursor.getColumnIndex(AppProfileEntry.COLUMN_PROFILE_ID));
+            cursor.close();
+            return Profile.getProfile(context, profileId);
+        }
+        return null;
     }
 }

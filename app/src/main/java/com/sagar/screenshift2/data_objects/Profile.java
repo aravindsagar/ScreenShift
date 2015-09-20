@@ -1,9 +1,25 @@
 package com.sagar.screenshift2.data_objects;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 
+import com.sagar.screenshift2.PreferencesHelper;
+import com.sagar.screenshift2.ScreenShiftService;
 import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
+
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_VALUE;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_MASTER_SWITCH_ON;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_BOTTOM;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_LEFT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_RIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_OVERSCAN_TOP;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_ENABLED;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_HEIGHT;
+import static com.sagar.screenshift2.PreferencesHelper.KEY_RESOLUTION_WIDTH;
+import static com.sagar.screenshift2.ScreenShiftService.ACTION_START;
 
 /**
  * Created by aravind on 17/6/15.
@@ -75,5 +91,38 @@ public class Profile {
         profile.name                = cursor.getString(cursor.getColumnIndex(
                 ProfileEntry.COLUMN_NAME));
         return profile;
+    }
+
+    public void saveAsCurrent(Context context) {
+        PreferencesHelper.setPreference(context, KEY_RESOLUTION_ENABLED, isResolutionEnabled);
+        PreferencesHelper.setPreference(context, KEY_DENSITY_ENABLED   , isDensityEnabled);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_ENABLED  , isOverscanEnabled);
+        PreferencesHelper.setPreference(context, KEY_RESOLUTION_WIDTH  , resolutionWidth);
+        PreferencesHelper.setPreference(context, KEY_RESOLUTION_HEIGHT , resolutionHeight);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_LEFT     , overscanLeft);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_RIGHT    , overscanRight);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_TOP      , overscanTop);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_BOTTOM   , overscanBottom);
+        PreferencesHelper.setPreference(context, KEY_DENSITY_VALUE, densityValue);
+
+        if(PreferencesHelper.getBoolPreference(context, KEY_MASTER_SWITCH_ON)) {
+            context.startService(new Intent(context, ScreenShiftService.class)
+                    .setAction(ACTION_START));
+        }
+    }
+
+    public static Profile fromSavedValues(Context context) {
+        Profile current = new Profile();
+        current.isResolutionEnabled = PreferencesHelper.getBoolPreference(context, KEY_RESOLUTION_ENABLED);
+        current.isOverscanEnabled   = PreferencesHelper.getBoolPreference(context, KEY_OVERSCAN_ENABLED);
+        current.isDensityEnabled    = PreferencesHelper.getBoolPreference(context, KEY_DENSITY_ENABLED);
+        current.resolutionWidth     = PreferencesHelper.getIntPreference (context, KEY_RESOLUTION_WIDTH, -1);
+        current.resolutionHeight    = PreferencesHelper.getIntPreference (context, KEY_RESOLUTION_HEIGHT, -1);
+        current.overscanLeft        = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_LEFT, 0);
+        current.overscanRight       = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_RIGHT, 0);
+        current.overscanTop         = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_TOP, 0);
+        current.overscanBottom      = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_BOTTOM, 0);
+        current.densityValue        = PreferencesHelper.getIntPreference (context, KEY_DENSITY_VALUE, -1);
+        return current;
     }
 }

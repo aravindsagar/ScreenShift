@@ -51,12 +51,17 @@ public class AppProfilesListAdapter extends ArrayAdapter<App> {
 
         Profile profile = appProfiles.get(app.getPackageName());
         if(profile != null) {
-            viewHolder.profile.setText(profile.resolutionHeight + "x" + profile.resolutionWidth);
+            viewHolder.profile.setText(String.format("%dx%d", profile.resolutionHeight, profile.resolutionWidth));
         } else {
-            viewHolder.profile.setText("Default");
+            viewHolder.profile.setText(R.string.text_default);
         }
 
         return convertView;
+    }
+
+    public void reloadAppProfiles() {
+        appProfiles = App.readAppProfiles(getContext());
+        notifyDataSetChanged();
     }
 
     private static class AppProfileViewHolder {

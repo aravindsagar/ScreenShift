@@ -48,6 +48,7 @@ import com.sagar.screenshift2.util.Inventory;
 import com.sagar.screenshift2.util.Purchase;
 
 import static android.widget.Toast.LENGTH_SHORT;
+import static com.sagar.screenshift2.AppChangeDetectionService.ACTION_START_SERVICE;
 import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_ENABLED;
 import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_REBOOT;
 import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_VALUE;
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out);
         }
         startService(new Intent(this, ScreenShiftService.class).setAction(ACTION_SAVE_HEIGHT_WIDTH));
+        startService(new Intent(this, AppChangeDetectionService.class).setAction(ACTION_START_SERVICE));
         setContentView(R.layout.activity_main);
         init(savedInstanceState);
         setUpToolbar();
