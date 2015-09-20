@@ -9,9 +9,10 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:fullBackupContent="true"
         android:label="@string/app_name" >
         <activity
-            android:name="com.sagar.screenshift2.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyTheme.NoActionBar"
@@ -24,21 +25,21 @@
         </activity>
 
         <service
-            android:name="com.sagar.screenshift2.ScreenShiftService"
+            android:name=".ScreenShiftService"
             android:enabled="true"
             android:exported="false" >
         </service>
 
-        <receiver android:name="com.sagar.screenshift2.BootCompleteReceiver" >
+        <receiver android:name=".BootCompleteReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
         <activity
-            android:name="com.sagar.screenshift2.SettingsActivity"
+            android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName="com.sagar.screenshift2.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.MyTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -46,11 +47,11 @@
         </activity>
 
         <provider
-            android:name="com.sagar.screenshift2.profileDb.ProfileDbProvider"
+            android:name=".profileDb.ProfileDbProvider"
             android:authorities="com.sagar.screenshift2.app"
             android:exported="false" />
 
-        <receiver android:name="com.sagar.screenshift2.CallStateReceiver" >
+        <receiver android:name=".CallStateReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
                 <action android:name="com.android.deskclock.ALARM_DONE" />
@@ -61,15 +62,24 @@
         </receiver>
 
         <activity
-            android:name="com.sagar.screenshift2.ProductTourActivity"
+            android:name=".ProductTourActivity"
             android:label="@string/title_activity_product_tour"
             android:theme="@style/Theme.MyTheme.NoActionBar" >
         </activity>
         <activity
-            android:name="com.sagar.screenshift2.AboutActivity"
+            android:name=".AboutActivity"
             android:label="@string/title_activity_about"
-            android:parentActivityName="com.sagar.screenshift2.MainActivity"
-            android:theme="@style/Theme.MyTheme">
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MyTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sagar.screenshift2.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ProfilesActivity"
+            android:label="@string/title_activity_profiles"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MyTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sagar.screenshift2.MainActivity" />

@@ -65,4 +65,7 @@
     <string name="action_donate">Donate</string>
     <string name="donate_failed_message">Donate failed. Please try again.</string>
     <string name="prev_in_progress_try_later">Previous purchase is still being processed, please try after a few seconds.</string>
+    <string name="title_activity_profiles">Profiles</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_per_app_profiles">Per-app profiles</string>
 </resources>

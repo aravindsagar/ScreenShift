@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.sagar.screenshift2.profileDb.ProfileDbContract.AppProfileEntry;
 import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
 
 /**
@@ -13,7 +14,14 @@ import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
  */
 public class ProfileDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
+    /**
+     * DB version change log
+     *
+     * Ver 1: Initial version with profiles table
+     *
+     * Ver 2: Added per-app profiles table and tested column to profiles
+     */
+    private static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "profiles.db";
 
     @Override
@@ -32,14 +40,13 @@ public class ProfileDbHelper extends SQLiteOpenHelper {
                 + ProfileEntry.COLUMN_RESOLUTION_WIDTH + " INTEGER DEFAULT -1, "
                 + ProfileEntry.COLUMN_RESOLUTION_HEIGHT + " INTEGER DEFAULT -1); ";
         sqLiteDatabase.execSQL(SQL_CREATE_PROFILE);
-        for (int i = 1; i <= DATABASE_VERSION; i++) {
-            ContentValues[] values = getAddedProfileValues(i);
-            if (values != null) {
-                for(ContentValues values1: values) {
-                    sqLiteDatabase.insert(ProfileEntry.TABLE_NAME, null, values1);
-                }
+        ContentValues[] values = getAddedProfileValues(1);
+        if (values != null) {
+            for(ContentValues values1: values) {
+                sqLiteDatabase.insert(ProfileEntry.TABLE_NAME, null, values1);
             }
         }
+        onUpgrade(sqLiteDatabase, 1, DATABASE_VERSION);
     }
 
     private ContentValues[] getAddedProfileValues(int version) {
@@ -88,8 +95,29 @@ public class ProfileDbHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+        // Adding any new profiles in updated db versions
+        for (int i = oldVersion + 1; i <= newVersion; i++) {
+            ContentValues[] values = getAddedProfileValues(i);
+            if (values != null) {
+                for(ContentValues values1: values) {
+                    sqLiteDatabase.insert(ProfileEntry.TABLE_NAME, null, values1);
+                }
+            }
+        }
 
+        if(newVersion >= 2) {
+            final String SQL_CREATE_APP_PROFILE = "CREATE TABLE "
+                    + AppProfileEntry.TABLE_NAME          + " ( "
+                    + AppProfileEntry._ID                 + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + AppProfileEntry.COLUMN_PACKAGE_NAME + " TEXT UNIQUE NOT NULL, "
+                    + AppProfileEntry.COLUMN_PROFILE_ID   + " INTEGER NOT NULL); ";
+
+            sqLiteDatabase.execSQL("ALTER TABLE " + ProfileEntry.TABLE_NAME + " ADD COLUMN " +
+                    ProfileEntry.COLUMN_TESTED + " INTEGER DEFAULT 0");
+
+            sqLiteDatabase.execSQL(SQL_CREATE_APP_PROFILE);
+        }
     }
 
     private static ProfileDbHelper mInstance = null;

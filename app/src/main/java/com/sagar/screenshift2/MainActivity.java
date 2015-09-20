@@ -39,6 +39,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sagar.screenshift2.data_objects.Profile;
 import com.sagar.screenshift2.profileDb.ProfileDbContract.ProfileEntry;
 import com.sagar.screenshift2.util.IabHelper;
 import com.sagar.screenshift2.util.IabResult;
@@ -284,24 +285,13 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
         loadProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Cursor cursor = getContentResolver().query(ProfileEntry.CONTENT_URI, null, null, null, null);
-                if (cursor.moveToFirst()) {
-                    profiles = new Profile[cursor.getCount()];
-                    String[] itemStrings = new String[cursor.getCount()];
-                    for (int i = 0; !cursor.isAfterLast(); cursor.moveToNext(), i++) {
-                        Profile profile = new Profile();
-                        profile.isResolutionEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_ENABLED)) == 1;
-                        profile.isDensityEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_DENSITY_ENABLED)) == 1;
-                        profile.isOverscanEnabled = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_ENABLED)) == 1;
-                        profile.resolutionWidth = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_WIDTH));
-                        profile.resolutionHeight = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_RESOLUTION_HEIGHT));
-                        profile.densityValue = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_DENSITY_VALUE));
-                        profile.overscanLeft = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_LEFT));
-                        profile.overscanRight = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_RIGHT));
-                        profile.overscanTop = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_TOP));
-                        profile.overscanBottom = cursor.getInt(cursor.getColumnIndex(ProfileEntry.COLUMN_OVERSCAN_BOTTOM));
-                        itemStrings[i] = cursor.getString(cursor.getColumnIndex(ProfileEntry.COLUMN_NAME)) + " " + profile.resolutionWidth + "x" + profile.resolutionHeight;
-                        profiles[i] = profile;
+                profiles = Profile.getAllProfiles(MainActivity.this);
+                if (profiles != null && profiles.length > 0) {
+                    String[] itemStrings = new String[profiles.length];
+                    for(int i=0; i<profiles.length; i++) {
+                        Profile profile = profiles[i];
+                        itemStrings[i] = profile.name + " " + profile.resolutionWidth + "x" +
+                                profile.resolutionHeight;
                     }
                     Bundle bundle = new Bundle();
                     bundle.putStringArray(DialogFragments.KEY_LIST_ITEM_STRINGS, itemStrings);
@@ -309,7 +299,6 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                     dialogFragment.setArguments(bundle);
                     dialogFragment.show(getSupportFragmentManager(), "loadProfileDialog");
                 }
-                cursor.close();
             }
         });
         saveProfileButton.setOnClickListener(new View.OnClickListener() {
@@ -894,13 +883,13 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
                     ProfileEntry.COLUMN_NAME + " = ? ",
                     new String[]{name},
                     null);
-            if (existCursor.moveToFirst()) {
+            if (existCursor != null && existCursor.moveToFirst()) {
                 long id = existCursor.getInt(existCursor.getColumnIndex(ProfileEntry._ID));
                 getContentResolver().update(ProfileEntry.buildProfileUriWithId(id), values, null, null);
+                existCursor.close();
             } else {
                 getContentResolver().insert(ProfileEntry.CONTENT_URI, values);
             }
-            existCursor.close();
         } else if(fragment instanceof DialogFragments.DisplaySettingsWarningDialog) {
             overrideWarning = true;
             doneFab.performClick();
@@ -975,6 +964,8 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             } else {
                 Toast.makeText(this, "Cannot start in-app purchase.", LENGTH_SHORT).show();
             }
+        } else if(id == R.id.action_app_profiles) {
+            startActivity(new Intent(this, ProfilesActivity.class));
         }
 
         return super.onOptionsItemSelected(item);

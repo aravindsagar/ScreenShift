@@ -1,0 +1,19 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.sagar.screenshift2.ProfilesActivity"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/progress_bar_app_profiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="?android:attr/progressBarStyleHorizontal"/>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_view_app_profiles"
+        android:minHeight="?android:attr/listPreferredItemHeight"/>
+
+</LinearLayout>
+

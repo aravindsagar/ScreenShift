@@ -9,9 +9,10 @@ import android.provider.BaseColumns;
  */
 public class ProfileDbContract {
     public static final String CONTENT_AUTHORITY = "com.sagar.screenshift2.app";
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final Uri    BASE_CONTENT_URI  = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    public static final String PATH_PROFILES = "profiles";
+    public static final String PATH_PROFILES     = "profiles";
+    public static final String PATH_APP_PROFILES = "app_profiles";
 
     public static final class ProfileEntry implements BaseColumns {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
@@ -24,19 +25,39 @@ public class ProfileDbContract {
 
         public static final String TABLE_NAME = "profiles";
 
-        public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_NAME               = "name";
         public static final String COLUMN_RESOLUTION_ENABLED = "resolution_enabled";
-        public static final String COLUMN_RESOLUTION_WIDTH = "resolution_width";
-        public static final String COLUMN_RESOLUTION_HEIGHT = "resolution_height";
-        public static final String COLUMN_OVERSCAN_ENABLED = "overscan_enabled";
-        public static final String COLUMN_OVERSCAN_LEFT = "overscan_left";
-        public static final String COLUMN_OVERSCAN_RIGHT = "overscan_right";
-        public static final String COLUMN_OVERSCAN_TOP = "overscan_top";
-        public static final String COLUMN_OVERSCAN_BOTTOM = "overscan_bottom";
-        public static final String COLUMN_DENSITY_ENABLED = "density_enabled";
-        public static final String COLUMN_DENSITY_VALUE = "density_value";
+        public static final String COLUMN_RESOLUTION_WIDTH   = "resolution_width";
+        public static final String COLUMN_RESOLUTION_HEIGHT  = "resolution_height";
+        public static final String COLUMN_OVERSCAN_ENABLED   = "overscan_enabled";
+        public static final String COLUMN_OVERSCAN_LEFT      = "overscan_left";
+        public static final String COLUMN_OVERSCAN_RIGHT     = "overscan_right";
+        public static final String COLUMN_OVERSCAN_TOP       = "overscan_top";
+        public static final String COLUMN_OVERSCAN_BOTTOM    = "overscan_bottom";
+        public static final String COLUMN_DENSITY_ENABLED    = "density_enabled";
+        public static final String COLUMN_DENSITY_VALUE      = "density_value";
+        public static final String COLUMN_TESTED             = "tested";
 
         public static Uri buildProfileUriWithId(long id){
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(id)).build();
+        }
+    }
+
+    public static final class AppProfileEntry implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
+                .appendPath(PATH_APP_PROFILES).build();
+
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" +
+                CONTENT_AUTHORITY + "/" + PATH_APP_PROFILES;
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" +
+                CONTENT_AUTHORITY + "/" + PATH_APP_PROFILES;
+
+        public static final String TABLE_NAME = "app_profiles";
+
+        public static final String COLUMN_PACKAGE_NAME = "package_name";
+        public static final String COLUMN_PROFILE_ID   = "profile_id";
+
+        public static Uri buildAppProfileUriWithId(long id){
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(id)).build();
         }
     }
