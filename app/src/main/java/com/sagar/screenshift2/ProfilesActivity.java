@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +21,8 @@ import com.sagar.screenshift2.data_objects.Profile;
 import com.sagar.screenshift2.profileDb.ProfileDbContract.AppProfileEntry;
 
 import java.util.List;
+
+import static com.sagar.screenshift2.PreferencesHelper.KEY_APP_PROFILE_INFO_SHOWN;
 
 public class ProfilesActivity extends AppCompatActivity implements DialogFragments.DialogListener {
 
@@ -41,6 +44,8 @@ public class ProfilesActivity extends AppCompatActivity implements DialogFragmen
         setProgressBarIndeterminateVisibility(true);
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setIndeterminate(true);
+
+        showInfoIfRequired();
 
         new GetAppsAsyncTask().execute();
 
@@ -67,6 +72,21 @@ public class ProfilesActivity extends AppCompatActivity implements DialogFragmen
         });
     }
 
+    private void showInfoIfRequired(){
+        if(PreferencesHelper.getBoolPreference(this, KEY_APP_PROFILE_INFO_SHOWN)) {
+            return;
+        }
+        showInfo();
+        PreferencesHelper.setPreference(this, KEY_APP_PROFILE_INFO_SHOWN, true);
+    }
+
+    private void showInfo() {
+        new AlertDialog.Builder(this).setTitle(R.string.density_reboot_test_title)
+                .setMessage(getString(R.string.info_per_app_profiles))
+                .setPositiveButton(getString(R.string.got_it), null)
+                .show();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -82,7 +102,8 @@ public class ProfilesActivity extends AppCompatActivity implements DialogFragmen
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_help) {
+            showInfo();
             return true;
         }
 

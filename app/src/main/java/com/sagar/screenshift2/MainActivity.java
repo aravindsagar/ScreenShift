@@ -1,7 +1,6 @@
 package com.sagar.screenshift2;
 
 import android.animation.Animator;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -17,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
@@ -778,6 +778,9 @@ public class MainActivity extends AppCompatActivity implements DialogFragments.D
             PreferencesHelper.setPreference(this, KEY_DENSITY_VALUE, density);
         else
             PreferencesHelper.setPreference(this, KEY_DENSITY_VALUE, -1);
+
+        Profile.fromSavedValues(this).saveAsDefault(this);
+
         return true;
     }
 

@@ -23,25 +23,27 @@ public class PreferencesHelper {
 
     }
 
-    public static final String KEY_MASTER_SWITCH_ON = "master_switch";
-    public static final String KEY_RESOLUTION_ENABLED = "resolution_enabled";
-    public static final String KEY_RESOLUTION_WIDTH = "resolution_width";
-    public static final String KEY_RESOLUTION_HEIGHT = "resolution_height";
-    public static final String KEY_OVERSCAN_ENABLED = "overscan_enabled";
-    public static final String KEY_OVERSCAN_TOP = "overscan_top";
-    public static final String KEY_OVERSCAN_BOTTOM = "overscan_bottom";
-    public static final String KEY_OVERSCAN_LEFT = "overscan_left";
-    public static final String KEY_OVERSCAN_RIGHT = "overscan_right";
-    public static final String KEY_DENSITY_ENABLED = "density_enabled";
-    public static final String KEY_DENSITY_VALUE = "density_value";
-    public static final String KEY_DISPLAY_HEIGHT = "display_height";
-    public static final String KEY_DISPLAY_WIDTH = "display_width";
+    public static final String KEY_MASTER_SWITCH_ON       = "master_switch";
+    public static final String KEY_RESOLUTION_ENABLED     = "resolution_enabled";
+    public static final String KEY_RESOLUTION_WIDTH       = "resolution_width";
+    public static final String KEY_RESOLUTION_HEIGHT      = "resolution_height";
+    public static final String KEY_OVERSCAN_ENABLED       = "overscan_enabled";
+    public static final String KEY_OVERSCAN_TOP           = "overscan_top";
+    public static final String KEY_OVERSCAN_BOTTOM        = "overscan_bottom";
+    public static final String KEY_OVERSCAN_LEFT          = "overscan_left";
+    public static final String KEY_OVERSCAN_RIGHT         = "overscan_right";
+    public static final String KEY_DENSITY_ENABLED        = "density_enabled";
+    public static final String KEY_DENSITY_VALUE          = "density_value";
+    public static final String KEY_DISPLAY_HEIGHT         = "display_height";
+    public static final String KEY_DISPLAY_WIDTH          = "display_width";
 
     // Stores whether changing density triggers a reboot
-    public static final String KEY_DENSITY_REBOOT = "density_reboot";
+    public static final String KEY_DENSITY_REBOOT         = "density_reboot";
 
-    public static final String KEY_LAST_BOOT_TIME = "last_boot_time";
-    public static final String KEY_TUTORIAL_DONE = "tutorial_done";
+    public static final String KEY_LAST_BOOT_TIME         = "last_boot_time";
+    public static final String KEY_TUTORIAL_DONE          = "tutorial_done";
+
+    public static final String KEY_APP_PROFILE_INFO_SHOWN = "app_profile_info_shown";
 
     public static void setPreference(Context context, final String KEY, boolean value){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);

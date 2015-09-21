@@ -131,7 +131,7 @@ public class AppChangeDetectionService extends Service {
     public class OnForegroundAppChangedListenerImpl implements OnForegroundAppChangedListener {
 
         private Context mContext;
-        private Profile mProfileBeforeChange;
+        private Profile mDefaultProfile;
 
         public OnForegroundAppChangedListenerImpl(Context context) {
             mContext = context;
@@ -147,16 +147,16 @@ public class AppChangeDetectionService extends Service {
             Profile appProfile = App.getProfileForApp(mContext, packageName);
             if (appProfile != null) {
                 // This app has a specific profile set.
-                if(mProfileBeforeChange == null) {
+                if(mDefaultProfile == null) {
                     // Saving current values if previous app was using 'default' values. If not,
                     // the previous app would have backed this up.
-                    mProfileBeforeChange = Profile.fromSavedValues(mContext);
+                    mDefaultProfile = Profile.fromSavedDefaultValues(mContext);
                 }
                 appProfile.saveAsCurrent(mContext);
-            } else if (mProfileBeforeChange != null) {
+            } else if (mDefaultProfile != null) {
                 // No profile set for this app. Loading 'default' values if required.
-                mProfileBeforeChange.saveAsCurrent(mContext);
-                mProfileBeforeChange = null;
+                mDefaultProfile.saveAsCurrent(mContext);
+                mDefaultProfile = null;
             }
         }
     }

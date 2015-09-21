@@ -94,16 +94,7 @@ public class Profile {
     }
 
     public void saveAsCurrent(Context context) {
-        PreferencesHelper.setPreference(context, KEY_RESOLUTION_ENABLED, isResolutionEnabled);
-        PreferencesHelper.setPreference(context, KEY_DENSITY_ENABLED   , isDensityEnabled);
-        PreferencesHelper.setPreference(context, KEY_OVERSCAN_ENABLED  , isOverscanEnabled);
-        PreferencesHelper.setPreference(context, KEY_RESOLUTION_WIDTH  , resolutionWidth);
-        PreferencesHelper.setPreference(context, KEY_RESOLUTION_HEIGHT , resolutionHeight);
-        PreferencesHelper.setPreference(context, KEY_OVERSCAN_LEFT     , overscanLeft);
-        PreferencesHelper.setPreference(context, KEY_OVERSCAN_RIGHT    , overscanRight);
-        PreferencesHelper.setPreference(context, KEY_OVERSCAN_TOP      , overscanTop);
-        PreferencesHelper.setPreference(context, KEY_OVERSCAN_BOTTOM   , overscanBottom);
-        PreferencesHelper.setPreference(context, KEY_DENSITY_VALUE, densityValue);
+        saveWithKeySuffix(context, "");
 
         if(PreferencesHelper.getBoolPreference(context, KEY_MASTER_SWITCH_ON)) {
             context.startService(new Intent(context, ScreenShiftService.class)
@@ -111,18 +102,43 @@ public class Profile {
         }
     }
 
+    public void saveAsDefault(Context context) {
+        saveWithKeySuffix(context, "_default");
+    }
+
+    private void saveWithKeySuffix(Context context, String suffix) {
+        PreferencesHelper.setPreference(context, KEY_RESOLUTION_ENABLED + suffix, isResolutionEnabled);
+        PreferencesHelper.setPreference(context, KEY_DENSITY_ENABLED    + suffix, isDensityEnabled);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_ENABLED   + suffix, isOverscanEnabled);
+        PreferencesHelper.setPreference(context, KEY_RESOLUTION_WIDTH   + suffix, resolutionWidth);
+        PreferencesHelper.setPreference(context, KEY_RESOLUTION_HEIGHT  + suffix, resolutionHeight);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_LEFT      + suffix, overscanLeft);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_RIGHT     + suffix, overscanRight);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_TOP       + suffix, overscanTop);
+        PreferencesHelper.setPreference(context, KEY_OVERSCAN_BOTTOM    + suffix, overscanBottom);
+        PreferencesHelper.setPreference(context, KEY_DENSITY_VALUE + suffix, densityValue);
+    }
+
     public static Profile fromSavedValues(Context context) {
+        return fromSavedValuesWithKeySuffix(context, "");
+    }
+
+    public static Profile fromSavedDefaultValues(Context context) {
+        return fromSavedValuesWithKeySuffix(context, "_default");
+    }
+
+    private static Profile fromSavedValuesWithKeySuffix(Context context, String suffix) {
         Profile current = new Profile();
-        current.isResolutionEnabled = PreferencesHelper.getBoolPreference(context, KEY_RESOLUTION_ENABLED);
-        current.isOverscanEnabled   = PreferencesHelper.getBoolPreference(context, KEY_OVERSCAN_ENABLED);
-        current.isDensityEnabled    = PreferencesHelper.getBoolPreference(context, KEY_DENSITY_ENABLED);
-        current.resolutionWidth     = PreferencesHelper.getIntPreference (context, KEY_RESOLUTION_WIDTH, -1);
-        current.resolutionHeight    = PreferencesHelper.getIntPreference (context, KEY_RESOLUTION_HEIGHT, -1);
-        current.overscanLeft        = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_LEFT, 0);
-        current.overscanRight       = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_RIGHT, 0);
-        current.overscanTop         = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_TOP, 0);
-        current.overscanBottom      = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_BOTTOM, 0);
-        current.densityValue        = PreferencesHelper.getIntPreference (context, KEY_DENSITY_VALUE, -1);
+        current.isResolutionEnabled = PreferencesHelper.getBoolPreference(context, KEY_RESOLUTION_ENABLED + suffix);
+        current.isOverscanEnabled   = PreferencesHelper.getBoolPreference(context, KEY_OVERSCAN_ENABLED + suffix);
+        current.isDensityEnabled    = PreferencesHelper.getBoolPreference(context, KEY_DENSITY_ENABLED + suffix);
+        current.resolutionWidth     = PreferencesHelper.getIntPreference (context, KEY_RESOLUTION_WIDTH + suffix, -1);
+        current.resolutionHeight    = PreferencesHelper.getIntPreference (context, KEY_RESOLUTION_HEIGHT + suffix, -1);
+        current.overscanLeft        = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_LEFT + suffix, 0);
+        current.overscanRight       = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_RIGHT + suffix, 0);
+        current.overscanTop         = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_TOP + suffix, 0);
+        current.overscanBottom      = PreferencesHelper.getIntPreference (context, KEY_OVERSCAN_BOTTOM + suffix, 0);
+        current.densityValue        = PreferencesHelper.getIntPreference (context, KEY_DENSITY_VALUE + suffix, -1);
         return current;
     }
 }
