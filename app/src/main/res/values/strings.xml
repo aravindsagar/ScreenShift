@@ -72,4 +72,5 @@
     <string name="info_per_app_profiles">Please test the profiles by applying them, before assigning them to apps. Failure to do so might make your display unusable!\n\nSet different display profiles for apps here. Resolution will change automatically when that app is opened.\n\'Default\' profile will contain values that was last applied in the main settings page.</string>
     <string name="got_it">Got it</string>
     <string name="action_quick_help">Quick Help</string>
+    <string name="about_header">Screen Shift v%s</string>
 </resources>

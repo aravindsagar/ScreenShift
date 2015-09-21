@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class AboutActivity extends AppCompatActivity {
 
@@ -22,5 +23,7 @@ public class AboutActivity extends AppCompatActivity {
                 startActivity(browserIntent);
             }
         });
+        TextView heading = (TextView) findViewById(R.id.heading);
+        heading.setText(String.format(getString(R.string.about_header), BuildConfig.VERSION_NAME));
     }
 }
