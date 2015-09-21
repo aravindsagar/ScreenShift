@@ -22,6 +22,7 @@ import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
 
+import static com.sagar.screenshift2.AppChangeDetectionService.ACTION_CLEAR_PREVIOUS_PACKAGE;
 import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_ENABLED;
 import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_REBOOT;
 import static com.sagar.screenshift2.PreferencesHelper.KEY_DENSITY_VALUE;
@@ -207,6 +208,7 @@ public class ScreenShiftService extends Service {
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
                             .sendBroadcast(new Intent(ACTION_START));
                 }
+                resetAppSwitchDetection();
             }
         }.execute(sendBroadcast, postNotification);
     }
@@ -244,8 +246,13 @@ public class ScreenShiftService extends Service {
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
                             .sendBroadcast(new Intent(ACTION_STOP));
                 }
+                resetAppSwitchDetection();
             }
         }.execute(sendBroadcast, postNotification);
+    }
+
+    private void resetAppSwitchDetection() {
+        startService(AppChangeDetectionService.getServiceIntent(this, ACTION_CLEAR_PREVIOUS_PACKAGE));
     }
 
     private void saveWidthHeight(){
