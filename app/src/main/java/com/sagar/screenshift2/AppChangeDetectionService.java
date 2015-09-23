@@ -3,6 +3,8 @@ package com.sagar.screenshift2;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.Service;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -13,6 +15,8 @@ import com.sagar.screenshift2.data_objects.App;
 import com.sagar.screenshift2.data_objects.Profile;
 
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import static com.sagar.screenshift2.PreferencesHelper.KEY_MASTER_SWITCH_ON;
 
@@ -31,6 +35,7 @@ public class AppChangeDetectionService extends Service {
     private AppLockThread mAppLockThread;
 
     ActivityManager mActivityManager;
+    UsageStatsManager mUsageStatsManager;
 
     public AppChangeDetectionService() {
     }
@@ -48,6 +53,9 @@ public class AppChangeDetectionService extends Service {
         startThread();
         mOnForegroundAppChangedListener = new OnForegroundAppChangedListenerImpl(this);
         mActivityManager = (ActivityManager) getBaseContext().getSystemService(Context.ACTIVITY_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            mUsageStatsManager = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+        }
         super.onCreate();
     }
 
@@ -97,35 +105,50 @@ public class AppChangeDetectionService extends Service {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    break;
                 }
 
-                String foregroundTaskPackageName, foregroundTaskActivityName;
-                if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                    RunningTaskInfo foregroundTaskInfo = mActivityManager.getRunningTasks(1).get(0);
-
-                    foregroundTaskPackageName = foregroundTaskInfo.topActivity.getPackageName();
-                    foregroundTaskActivityName = foregroundTaskInfo.topActivity.getShortClassName();
-                } else {
-                    ActivityManager manager = (ActivityManager)AppChangeDetectionService.this.getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.RunningAppProcessInfo> tasks = manager.getRunningAppProcesses();
+                String foregroundTaskPackageName = "";
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    long time = System.currentTimeMillis();
+                    List<UsageStats> appList = mUsageStatsManager
+                            .queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*100, time);
+                    if (appList != null && appList.size() > 0) {
+                        SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
+                        for (UsageStats usageStats : appList) {
+                            mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+                        }
+                        if (!mySortedMap.isEmpty()) {
+                            foregroundTaskPackageName = mySortedMap
+                                    .get(mySortedMap.lastKey()).getPackageName();
+                        }
+                    }
+                } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    List<ActivityManager.RunningAppProcessInfo> tasks =
+                            mActivityManager.getRunningAppProcesses();
                     foregroundTaskPackageName = tasks.get(0).processName;
-                    foregroundTaskActivityName = "";
-                }
-                if(foregroundTaskPackageName.equals(previousPackageName)){
-                    continue;
                 } else {
-                    previousPackageName = foregroundTaskPackageName;
+                    RunningTaskInfo foregroundTaskInfo = mActivityManager.getRunningTasks(1).get(0);
+                    foregroundTaskPackageName = foregroundTaskInfo.topActivity.getPackageName();
                 }
+
+                if(foregroundTaskPackageName.equals("") ||
+                        foregroundTaskPackageName.equals(previousPackageName)){
+                    continue;
+                }
+
+                previousPackageName = foregroundTaskPackageName;
+
                 if(mOnForegroundAppChangedListener != null){
                     mOnForegroundAppChangedListener.onForegroundAppChanged(
-                            foregroundTaskPackageName, foregroundTaskActivityName);
+                            foregroundTaskPackageName);
                 }
             }
         }
     }
 
     public interface OnForegroundAppChangedListener {
-        void onForegroundAppChanged(String packageName, String activityName);
+        void onForegroundAppChanged(String packageName);
     }
 
     public class OnForegroundAppChangedListenerImpl implements OnForegroundAppChangedListener {
@@ -138,7 +161,7 @@ public class AppChangeDetectionService extends Service {
         }
 
         @Override
-        public void onForegroundAppChanged(String packageName, String activityName) {
+        public void onForegroundAppChanged(String packageName) {
             Log.d("AppChangeDetection", "Foreground app changed: " + packageName);
             if (!PreferencesHelper.getBoolPreference(mContext, KEY_MASTER_SWITCH_ON)) {
                 return;

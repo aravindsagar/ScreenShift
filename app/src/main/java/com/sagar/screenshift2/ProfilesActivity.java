@@ -1,10 +1,19 @@
 package com.sagar.screenshift2;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AppOpsManager;
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +24,7 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.sagar.screenshift2.data_objects.App;
 import com.sagar.screenshift2.data_objects.Profile;
@@ -45,8 +55,6 @@ public class ProfilesActivity extends AppCompatActivity implements DialogFragmen
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setIndeterminate(true);
 
-        showInfoIfRequired();
-
         new GetAppsAsyncTask().execute();
 
         appsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -72,8 +80,24 @@ public class ProfilesActivity extends AppCompatActivity implements DialogFragmen
         });
     }
 
+    /**
+     * Dispatch onResume() to fragments.  Note that for better inter-operation
+     * with older versions of the platform, at the point of this call the
+     * fragments attached to the activity are <em>not</em> resumed.  This means
+     * that in some cases the previous state may still be saved, not allowing
+     * fragment transactions that modify the state.  To correctly interact
+     * with fragments in their proper state, you should instead override
+     * {@link #onResumeFragments()}.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showInfoIfRequired();
+    }
+
     private void showInfoIfRequired(){
         if(PreferencesHelper.getBoolPreference(this, KEY_APP_PROFILE_INFO_SHOWN)) {
+            showEnableUsageAccess();
             return;
         }
         showInfo();
@@ -83,8 +107,61 @@ public class ProfilesActivity extends AppCompatActivity implements DialogFragmen
     private void showInfo() {
         new AlertDialog.Builder(this).setTitle(R.string.density_reboot_test_title)
                 .setMessage(getString(R.string.info_per_app_profiles))
-                .setPositiveButton(getString(R.string.got_it), null)
+                .setPositiveButton(getString(R.string.got_it), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        showEnableUsageAccess();
+                    }
+                })
                 .show();
+    }
+
+    private void showEnableUsageAccess() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || hasUsageAccess()) return;
+        new AlertDialog.Builder(this).setTitle(getString(R.string.heading_enable_usage_access))
+                .setMessage(getString(R.string.message_enable_usage_access))
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(intent);
+                        } else {
+                            intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+                            intent.setComponent(new ComponentName("com.android.settings",
+                                    "com.android.settings.Settings$SecuritySettingsActivity"));
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(ProfilesActivity.this,
+                                R.string.message_enable_usage_access_for_per_app_profiles,
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .show();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private boolean hasUsageAccess() {
+        try {
+            PackageManager packageManager = getPackageManager();
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(getPackageName(), 0);
+            AppOpsManager appOpsManager = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            int mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    applicationInfo.uid, applicationInfo.packageName);
+            return (mode == AppOpsManager.MODE_ALLOWED);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     @Override

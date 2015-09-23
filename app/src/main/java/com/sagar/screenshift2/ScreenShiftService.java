@@ -133,6 +133,7 @@ public class ScreenShiftService extends Service {
         } else {
             start(sendBroadcast, postNotification, overrideDensityReboot);
         }
+        resetAppSwitchDetection();
     }
 
     private void start(boolean sendBroadcast, boolean postNotification, final boolean overrideDensityReboot){
@@ -208,7 +209,6 @@ public class ScreenShiftService extends Service {
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
                             .sendBroadcast(new Intent(ACTION_START));
                 }
-                resetAppSwitchDetection();
             }
         }.execute(sendBroadcast, postNotification);
     }
@@ -246,7 +246,6 @@ public class ScreenShiftService extends Service {
                     LocalBroadcastManager.getInstance(ScreenShiftService.this)
                             .sendBroadcast(new Intent(ACTION_STOP));
                 }
-                resetAppSwitchDetection();
             }
         }.execute(sendBroadcast, postNotification);
     }

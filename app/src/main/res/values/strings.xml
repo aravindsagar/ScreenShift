@@ -73,4 +73,7 @@
     <string name="got_it">Got it</string>
     <string name="action_quick_help">Quick Help</string>
     <string name="about_header">Screen Shift v%s</string>
+    <string name="message_enable_usage_access">In order for Screen Shift to identify the currently running app, it should be granted Usage Access Permission. Click Ok to go to Security settings, select \'Apps with usage access\' and enable Screen Shift there. After that please press back to return to Screen Shift.</string>
+    <string name="message_enable_usage_access_for_per_app_profiles">Please enable usage access to use per-app profiles.</string>
+    <string name="heading_enable_usage_access">Please enable usage access</string>
 </resources>
