@@ -1,6 +1,11 @@
 # ScreenShift
 A simple app to change screen resolution, density and overscan of Android devices.
 
+<a href="https://play.google.com/store/apps/details?id=com.sagar.screenshift2">
+  <img alt="Get it on Google Play"
+       src="https://developer.android.com/images/brand/en_generic_rgb_wo_60.png" />
+</a>
+
 Uses the following adb commands before JellyBean 4.3:
 
     am display-size
